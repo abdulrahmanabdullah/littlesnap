@@ -12,6 +12,8 @@ import android.view.View
 import com.abdulrahman.littlesnap.utlities.PERMISSIONS
 import com.abdulrahman.littlesnap.utlities.REQUEST_CAMERA_PERMISSIONS
 import com.abdulrahman.littlesnap.utlities.showToast
+import com.abdulrahman.littlesnap.viewPagerAdapter.MainPagerAdapter
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -19,7 +21,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        val adapter = MainPagerAdapter(supportFragmentManager)
+        main_viewPager.adapter = adapter
+
     }
+
 
     //Set full screen view
     override fun onWindowFocusChanged(hasFocus: Boolean) {
