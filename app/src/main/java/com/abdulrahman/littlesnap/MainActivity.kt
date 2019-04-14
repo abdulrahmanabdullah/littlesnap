@@ -3,10 +3,12 @@ package com.abdulrahman.littlesnap
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.pm.PackageManager
+import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.DialogFragment
+import android.support.v4.view.ViewPager
 import android.util.Log
 import android.view.View
 import com.abdulrahman.littlesnap.utlities.PERMISSIONS
@@ -17,16 +19,51 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
+    lateinit var mBackgroundColor:View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        mBackgroundColor = findViewById(R.id.main_background_view)
         val adapter = MainPagerAdapter(supportFragmentManager)
         main_viewPager.adapter = adapter
 
+        //todo create this listener as a lambda
+        main_viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+
+            override fun onPageScrollStateChanged(position: Int) {
+            }
+
+            override fun onPageScrolled(position: Int, p1: Float, p2: Int) {
+                when(position){
+                    0-> { // Chat fragment
+                        checkApiLevelAndColor(R.color.chat_background_color)
+                        mBackgroundColor.alpha = 1 - p1
+                    }
+                    1 ->{
+                        checkApiLevelAndColor(R.color.camera_background_color)
+                        mBackgroundColor.alpha =  p1
+                    }
+                    else ->{
+                        checkApiLevelAndColor(R.color.story_background_color)
+                    }
+                }
+            }
+
+            override fun onPageSelected(p0: Int) {
+            }
+
+        })
     }
 
 
+    fun checkApiLevelAndColor(colorId:Int){
+       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+           mBackgroundColor.setBackgroundColor(getColor(colorId))
+       }else{
+           // set default background
+       }
+    }
     //Set full screen view
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
@@ -113,6 +150,7 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
         init()//To check permissions every startup
     }
+
 
     //Dialog appear when user choice don't ask me again ...
     class PermissionConfirmationDialog : DialogFragment() {
