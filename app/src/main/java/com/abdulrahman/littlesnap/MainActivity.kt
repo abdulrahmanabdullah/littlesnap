@@ -65,11 +65,13 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    //Call this function when app start up and user click deny permissions
     private fun requestCameraPermissions() {
         ActivityCompat.requestPermissions(this, PERMISSIONS, REQUEST_CAMERA_PERMISSIONS)
     }
     //End region
 
+    //todo : rename this function and replace it job .
     private fun init() {
         if (!hasAllPermissionsGranted()) {
             requestCameraPermissions()
