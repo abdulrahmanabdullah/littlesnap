@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.DialogFragment
 import android.util.Log
+import android.view.View
 import com.abdulrahman.littlesnap.utlities.PERMISSIONS
 import com.abdulrahman.littlesnap.utlities.REQUEST_CAMERA_PERMISSIONS
 import com.abdulrahman.littlesnap.utlities.showToast
@@ -20,6 +21,21 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
     }
 
+    //Set full screen view
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        var decoreView: View = window.decorView
+        if (hasFocus) {
+            decoreView.systemUiVisibility =
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+
+        }
+    }
 
     //Permissions region
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -83,8 +99,8 @@ class MainActivity : AppCompatActivity() {
 
     //Inflate Camera2Fragment
     private fun startCamera2() {
-        supportFragmentManager.beginTransaction().replace(R.id.fragment_container, Camera2Fragment.newInstance())
-            .commit()
+//        supportFragmentManager.beginTransaction().replace(R.id.fragment_container, Camera2Fragment.newInstance())
+//            .commit()
     }
 
     override fun onStart() {
