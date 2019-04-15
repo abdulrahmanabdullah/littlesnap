@@ -11,9 +11,9 @@
 
                 android:layout_alignParentTop="true"
                 android:layout_alignParentLeft="true"
-                android:src="@drawable/ic_flash_auto"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
+                android:src="@drawable/img_amusing"
+                android:layout_width="65dp"
+                android:layout_height="65dp"
                 android:id="@+id/chat_imgView"/>
 
 
@@ -29,13 +29,13 @@
         />
 
         <ImageView
-                android:src="@drawable/ic_flash_auto"
+                android:src="@drawable/ic_chat"
                 android:id="@+id/chat_mim_imageView"
                 android:layout_below="@id/chat_userName"
                 android:layout_toRightOf="@id/chat_imgView"
-                android:layout_width="22dp"
+                android:layout_width="25dp"
                 android:layout_marginEnd="10dp"
-                android:layout_height="22dp"
+                android:layout_height="25dp"
         />
 
         <TextView
