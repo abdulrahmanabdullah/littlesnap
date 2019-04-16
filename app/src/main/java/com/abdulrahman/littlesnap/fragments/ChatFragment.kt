@@ -36,9 +36,6 @@ class ChatFragment : BaseFragment() {
         recycler.layoutManager = LinearLayoutManager(activity)
         val adapter = ChatAdapter(listUsers)
         recycler.adapter =adapter
-        Log.i("main", "Here Call fragment chat ${listUsers[0].userId}")
-        Log.i("main", "Here Call fragment chat ${listUsers[1].userId}")
-        Log.i("main", "Here Call fragment chat ${listUsers[2].userId}")
     }
 
 
