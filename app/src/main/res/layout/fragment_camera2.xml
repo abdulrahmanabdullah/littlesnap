@@ -27,7 +27,7 @@
     <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" android:src="@drawable/cam_action_stillshot"
-            android:id="@+id/camShot"
+            android:id="@+id/stillShot_imgView"
             android:layout_marginEnd="167dp"
             app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginBottom="8dp"/>

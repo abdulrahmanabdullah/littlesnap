@@ -17,7 +17,43 @@ import com.abdulrahman.littlesnap.utlities.showToast
 import com.abdulrahman.littlesnap.viewPagerAdapter.MainPagerAdapter
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() , CameraIdCallback {
+
+    companion object {
+          var CAMERA_POSITION_FRONT:String = ""
+          var CAMERA_POSITION_BACK:String = ""
+    }
+
+    //Implementation CameraIdCallback Region
+
+    var mCameraOriention = "none" //front-facing or back-facing
+
+    override fun setCameraFrontFacing() {
+        mCameraOriention = CAMERA_POSITION_FRONT
+
+    }
+
+    override fun setFrontCameraId(cameraId: String) {
+        CAMERA_POSITION_FRONT = cameraId
+    }
+
+    override fun setBackCameraId(cameraId: String) {
+        CAMERA_POSITION_BACK = cameraId
+    }
+    override fun setCameraBackFacing() {
+        mCameraOriention = CAMERA_POSITION_BACK
+    }
+
+    override fun isCameraFrontFacing(): Boolean  = mCameraOriention == CAMERA_POSITION_FRONT
+
+    override fun isCameraBackFacing(): Boolean = mCameraOriention == CAMERA_POSITION_BACK
+
+    override fun getFrontCameraId():String = CAMERA_POSITION_FRONT
+
+    override fun getBackCameraId():String = CAMERA_POSITION_BACK
+
+    //End region
+
 
     lateinit var mBackgroundColor:View
 
@@ -27,7 +63,6 @@ class MainActivity : AppCompatActivity() {
         mBackgroundColor = findViewById(R.id.main_background_view)
         val adapter = MainPagerAdapter(supportFragmentManager)
         main_viewPager.adapter = adapter
-
         //todo create this listener as a lambda
         main_viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
 
