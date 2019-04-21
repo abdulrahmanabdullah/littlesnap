@@ -39,13 +39,23 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.lang.Exception
 import java.lang.NullPointerException
-import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
 class Camera2Fragment : BaseFragment(), View.OnClickListener {
 
+
+    //View region
+    //ImageView to display image after take picture
+    private lateinit var mImageView: ImageView
+
+    /** Object of [AutoFitTextureView] and init in inOnCreateView*/
+    private lateinit var mTextureView: AutoFitTextureView
+
+    //This button for switch front and back cam
+    lateinit var mSwitchCamImageButton: ImageButton
+    //End View region
 
     //Listener for which camera used front or back  init this interface in onAttach
     private lateinit var mCameraIdCallback: CameraIdCallback
@@ -54,14 +64,8 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
     //Check value of this variable onImageAvailable
     private var mImageAvailable = false
 
-    //ImageView to display image after take picture
-    private lateinit var mImageView: ImageView
-
-
-    //This varaible init inside asyncTask then uploaded into mImageView
+    //This variable init inside asyncTask then uploaded into mImageView
     private lateinit var mCapturedBitmap: Bitmap
-
-
     //AsyncTask
     private var mBackgroundImageTask: BackgroundImagerTask? = null
 
@@ -348,8 +352,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
     private val mOpenCameraCloseLock = Semaphore(1)
     //The Size of camera Preview
     private lateinit var mPreviewSize: Size
-    /** Object of [AutoFitTextureView] and init in inOnCreateView*/
-    private lateinit var mTextureView: AutoFitTextureView
     //Create surface listener of texture from layout and set preview
     private val mTextViewSurface = object : TextureView.SurfaceTextureListener {
 
@@ -365,25 +367,15 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
         override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, width: Int, height: Int) {
             openCamera(width, height)
         }
-
     }
 
     //To get camera Id
     private lateinit var mCameraId: String
 
-    //todo : resolve open and close camera, This fragment always onAttach and not destroyed
-    override fun onAttach(context: Context?) {
-        super.onAttach(context)
-        mCameraIdCallback = activity as CameraIdCallback
-        Log.i("main", "Camera fragment is attach")
-    }
-
-
+    //Implementation Region
     override fun getLayoutResId(): Int {
         return R.layout.fragment_camera2
     }
-
-    lateinit var mSwitchCamImageButton: ImageButton
     override fun inOnCreateView(view: View, container: ViewGroup?, bundle: Bundle?) {
         mTextureView = view.findViewById(R.id.camera_textureView)
         mImageView = view.findViewById(R.id.stillShot_imageView)
@@ -392,7 +384,26 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
         mSwitchCamImageButton.setOnClickListener(this)
         setMaxRatio()
     }
+    //Call this function in inOnCreateView
+    //This function solve stretching image to full screen for any phones
+    private fun setMaxRatio() {
+        val display = Point()
+        activity!!.windowManager.defaultDisplay.getSize(display)
+        SCREEN_WIDTH = display.y
+        SCREEN_HEIGHT = display.x
+        Log.i(TAG, " Now width = $SCREEN_WIDTH And height = $SCREEN_HEIGHT")
+    }
+    //End Implementation region
 
+
+    //Fragment Lifecycle region
+
+    //todo : resolve open and close camera, This fragment always onAttach and not destroyed
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        mCameraIdCallback = activity as CameraIdCallback
+        Log.i("main", "Camera fragment is attach")
+    }
 
     override fun onResume() {
         super.onResume()
@@ -415,6 +426,9 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
             mBackgroundImageTask?.cancel(true)
         }
     }
+    //End Lifecycle region
+
+
 
     //Open and setup camera region
     private fun openCamera(width: Int, height: Int) {
@@ -619,15 +633,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
     }
 
 
-    //Call this function in inOnCreateView
-    //This function solve stretching image to full screen for any phones
-    private fun setMaxRatio() {
-        val display = Point()
-        activity!!.windowManager.defaultDisplay.getSize(display)
-        SCREEN_WIDTH = display.y
-        SCREEN_HEIGHT = display.x
-        Log.i(TAG, " Now width = $SCREEN_WIDTH And height = $SCREEN_HEIGHT")
-    }
 
     private fun configTransForm(viewWidth: Int, viewHeight: Int) {
         activity ?: return
@@ -749,8 +754,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
                         } catch (e: CameraAccessException) {
                             Log.d(TAG, "onConfigured camera preview ${e.message}")
                         }
-
-
                     }
 
                 },
@@ -818,6 +821,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
     //Thread and Handler region
     private var mBackgroundThread: HandlerThread? = null
     private var mBackgroundHandler: Handler? = null
+
     private fun startBackgroundHandler() {
         mBackgroundThread = HandlerThread("Camera2Api").also { it.start() }
         mBackgroundHandler = Handler(mBackgroundThread?.looper)
@@ -837,16 +841,17 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
         }
 
     }
-    //End region
+    //End Thread region
 
 
+    //Static functions
     companion object {
         fun newInstance(): Fragment {
             return Camera2Fragment()
         }
 
 
-        //Compare preview camera size.
+        //Compare preview camera size, Google forum
         @JvmStatic
         private fun chooseOptimalSize(
             choices: Array<Size>,
@@ -888,7 +893,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
         }
     }
 
-
+    //Background task region
     //todo : convert this part to Rx
     private inner class BackgroundImagerTask(context: Context?) : AsyncTask<Void, Int, Int>() {
 
@@ -923,6 +928,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
         }
 
     }
+    //End Background task region
 
     //Show image after take picture
     fun displayCaptureImage() {
@@ -950,6 +956,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
 
     }
 
+    //Call this function in background task - doInBackground to check image rotation
     private fun rotateBitmap(orientation: Int, bitmap: Bitmap): Bitmap? {
         val matrix = Matrix()
         when (orientation) {
@@ -1039,10 +1046,5 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
 
     }
 }
-
-
-//    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?= inflater.inflate(
-//        R.layout.fragment_camera2,container,false)
-
 
 
