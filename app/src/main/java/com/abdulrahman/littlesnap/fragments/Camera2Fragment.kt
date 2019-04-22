@@ -62,7 +62,13 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
 
     private lateinit var mCloseImageView:ImageView
 
-    private lateinit var mStillImageView:ImageView
+    //Widgets
+    private lateinit var mCaptureButtonContainer:RelativeLayout
+
+    private lateinit var mSwitchToggleContainer:RelativeLayout
+
+    private lateinit var mFlashContainer:RelativeLayout
+
     //End View region
 
     //Camera2 Callback  it's = 4 interfaces and abstract classes  region
@@ -168,7 +174,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
 
                     Glide.with(activity!!)
                         .load(mCapturedImage)
-                        .into(mStillImageView)
+                        .into(mImageView)
 
                     showStillShotContainer()
                 }
@@ -202,7 +208,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
             R.id.switchCamOrient -> {
                 toggleCameraDisplayOrientation()
             }
-            R.id.stillShot_container ->{
+            R.id.close_image_imageView ->{
                 hideStillShotContainer()
             }
         }
@@ -401,14 +407,16 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
         return R.layout.fragment_camera2
     }
     override fun inOnCreateView(view: View, container: ViewGroup?, bundle: Bundle?) {
+        //Relative layout
+        mSwitchToggleContainer = view.findViewById(R.id.switch_toggle_container)
+        mFlashContainer = view.findViewById(R.id.flash_toggle_container)
+        mCaptureButtonContainer = view.findViewById(R.id.capture_button_container)
         mTextureView = view.findViewById(R.id.camera_textureView)
         mImageView = view.findViewById(R.id.stillShot_imageView)
         view.findViewById<ImageButton>(R.id.stillShot_imgView).setOnClickListener(this)
         mSwitchCamImageButton = view.findViewById(R.id.switchCamOrient)
         mSwitchCamImageButton.setOnClickListener(this)
         mStillshotContainer = view.findViewById(R.id.stillShot_container)
-        mStillImageView = view.findViewById(R.id.still_temp_imageView)
-        mStillshotContainer.setOnClickListener(this)
         mCloseImageView = view.findViewById(R.id.close_image_imageView)
         mCloseImageView.setOnClickListener(this)
         setMaxRatio()
@@ -981,8 +989,11 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
 
 
     private fun showStillShotContainer() {
-        mSwitchCamImageButton.visibility = INVISIBLE
-
+        mSwitchToggleContainer.visibility = INVISIBLE
+        mCaptureButtonContainer.visibility = INVISIBLE
+        mFlashContainer.visibility = INVISIBLE
+        //Set Still shot container visible
+        mStillshotContainer.visibility = VISIBLE
         closeCamera()
 
     }
@@ -1092,6 +1103,10 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
 
 
     private fun resetIconVisibilties(){
+        mSwitchToggleContainer.visibility = VISIBLE
+        mCaptureButtonContainer.visibility = VISIBLE
+        mFlashContainer.visibility = VISIBLE
+        //Set Still shot container visible
         mStillshotContainer.visibility = INVISIBLE
     }
 
