@@ -45,6 +45,7 @@ import java.util.*
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
+//todo : facing camera not take picture in galaxy phones
 class Camera2Fragment : BaseFragment(), View.OnClickListener {
 
 
@@ -120,7 +121,10 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
         private fun process(result: CaptureResult) {
             when (mState) {
                 STATE_PREVIEW -> Unit // Do nothing when the camera preview is working normally.
-                STATE_WAITING_LOCK -> capturePicture(result)
+                STATE_WAITING_LOCK -> {
+
+                    capturePicture(result)
+                }
                 STATE_WAITING_PRECAPTURE -> {
                     // CONTROL_AE_STATE can be null on some devices
                     val aeState = result.get(CaptureResult.CONTROL_AE_STATE)
@@ -162,26 +166,25 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
     //Init in setupCameraOutputs func
     private var mImageReader: ImageReader? = null
     //Retrieving  data from mCaptureSession through mImageReader
-    private val onImageAvailableListener = ImageReader.OnImageAvailableListener {
+    private var onImageAvailableListener =
+        ImageReader.OnImageAvailableListener {
+            activity!!.showToast("ImageReader Now Call ")
         if (!mIsImageAvailable) {
-            mCapturedImage = mImageReader!!.acquireNextImage()
+            mCapturedImage = it!!.acquireNextImage()
             Log.i(TAG, "Image listener take picture ${mCapturedImage.timestamp}")
-
-            //todo : Solve slow take and save image
+            //todo : Solve slow take and save image -_- > Problem not here
             //Save image in memory but not solve my problem
-            if (activity != null) {
-                activity!!.runOnUiThread {
-
-                    Glide.with(activity!!)
-                        .load(mCapturedImage)
-                        .into(mImageView)
-
-                    showStillShotContainer()
-                }
-            }
+//            if (activity != null) {
+//                activity!!.runOnUiThread {
+//                    Glide.with(activity!!)
+//                        .load(mCapturedImage)
+//                        .into(mImageView)
+//
+//                    showStillShotContainer()
+//                }
+//            }
 
             saveTempImageToStorage()
-
         }
     }
     //End Camera2 callback region
@@ -419,7 +422,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
         mStillshotContainer = view.findViewById(R.id.stillShot_container)
         mCloseImageView = view.findViewById(R.id.close_image_imageView)
         mCloseImageView.setOnClickListener(this)
-        setMaxRatio()
     }
     //Call this function in inOnCreateView
     //This function solve stretching image to full screen for any phones
@@ -439,6 +441,12 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
         super.onAttach(context)
         mCameraIdCallback = activity as CameraIdCallback
         Log.i("main", "Camera fragment is attach")
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        resetIconVisibilties()
+        setMaxRatio()
     }
 
     override fun onResume() {
@@ -565,6 +573,12 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
             if (maxPreviewWidth > MAX_PREVIEW_WIDTH) maxPreviewWidth = MAX_PREVIEW_WIDTH
             if (maxPreviewHeight > MAX_PREVIEW_HEIGHT) maxPreviewHeight = MAX_PREVIEW_HEIGHT
 
+            //Init mCapturedImage
+            mImageReader = ImageReader.newInstance(
+                largest.width,
+                largest.height, ImageFormat.JPEG, 2
+            )
+            mImageReader?.setOnImageAvailableListener(onImageAvailableListener,mBackgroundHandler)
 
             //init Camera preview size ::
             mPreviewSize = chooseOptimalSize(
@@ -576,13 +590,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
             Log.i(TAG, " mPreviewSize w :> ${mPreviewSize.width}")
             Log.i(TAG, " mPreviewSize w :> ${mPreviewSize.height}")
 
-            //Init mCapturedImage
-            mImageReader = ImageReader.newInstance(
-                largest.width,
-                largest.height, ImageFormat.JPEG, 2
-            ).apply {
-                setOnImageAvailableListener(onImageAvailableListener, mBackgroundHandler)
-            }
 
             // We fit the aspect ratio of TextureView to the size of preview we picked.
             if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -638,17 +645,20 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
         try {
             for (cameraId in manager.cameraIdList) {
                 val characteristics = manager.getCameraCharacteristics(cameraId)
-                var facing = characteristics.get(CameraCharacteristics.LENS_FACING)
+                val facing = characteristics.get(CameraCharacteristics.LENS_FACING)
                 if (facing == CameraCharacteristics.LENS_FACING_FRONT) {
-//                    mCameraId = cameraId
                     mCameraIdCallback.setFrontCameraId(cameraId)
                 } else if (facing == CameraCharacteristics.LENS_FACING_BACK) {
-//                    mCameraId = cameraId
                     mCameraIdCallback.setBackCameraId(cameraId)
                 }
-                mCameraIdCallback.setCameraFrontFacing()
-                mCameraId = mCameraIdCallback.getFrontCameraId()
             }
+            //Set front facing when app start
+//            mCameraIdCallback.setCameraFrontFacing()
+//            mCameraId = mCameraIdCallback.getFrontCameraId()
+            //Move to Back lens when app start ..
+            mCameraIdCallback.setCameraBackFacing()
+            mCameraId = mCameraIdCallback.getBackCameraId()
+
         } catch (e: CameraAccessException) {
             Log.d(TAG, " findCamera throw exception ${e.message}")
         }
@@ -960,8 +970,10 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
         override fun onPostExecute(result: Int?) {
             super.onPostExecute(result)
             if (result == 1) {
+                activity!!.showToast("Done ")
                 displayCaptureImage()
             }else{
+                activity!!.showToast("failed ")
                 Log.d(TAG," Error in doInBackground result != 1")
             }
         }
@@ -973,7 +985,8 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
     fun displayCaptureImage() {
         if (activity != null) {
             activity!!.runOnUiThread {
-                val options = RequestOptions().diskCacheStrategy(DiskCacheStrategy.NONE)
+                val options = RequestOptions()
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .skipMemoryCache(true)
                     .centerCrop()
 
@@ -981,7 +994,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
                     .setDefaultRequestOptions(options)
                     .load(mCapturedBitmap)
                     .into(mImageView)
-
                 showStillShotContainer()
             }
         }
@@ -1021,30 +1033,32 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
 
             ExifInterface.ORIENTATION_FLIP_VERTICAL -> {
                 matrix.setRotate(180f)
-                matrix.setScale(-1f, 1f)
+                matrix.postScale(-1f, 1f)
             }
 
             ExifInterface.ORIENTATION_ROTATE_90 -> {
                 matrix.setRotate(90f)
             }
 
+            ExifInterface.ORIENTATION_TRANSVERSE -> {
+                matrix.setRotate(-90f)
+                matrix.postScale(-1f, 1f)
+            }
+
             ExifInterface.ORIENTATION_ROTATE_270 -> {
                 matrix.setRotate(-90f)
             }
 
-            ExifInterface.ORIENTATION_TRANSVERSE -> {
-                matrix.setRotate(-90f)
-                matrix.setScale(-1f, 1f)
-
-            }
         }
 
         return try {
+            //solve mirror picture
             if (mCameraIdCallback.isCameraFrontFacing()) {
                 matrix.setScale(-1f, 1f)
             }
 
             val bitmapRotater = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+            bitmap.recycle()
             bitmapRotater
         } catch (e: Exception) {
             null
