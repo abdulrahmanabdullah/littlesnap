@@ -22,11 +22,12 @@ import android.util.SparseIntArray
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
-import android.view.View.GONE
 import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.RelativeLayout
 import com.abdulrahman.littlesnap.*
 import com.abdulrahman.littlesnap.utlities.PIC_FILE_NAME
 import com.abdulrahman.littlesnap.utlities.TAG
@@ -34,6 +35,7 @@ import com.abdulrahman.littlesnap.utlities.showToast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
+import kotlinx.android.synthetic.main.fragment_camera2.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -55,6 +57,12 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
 
     //This button for switch front and back cam
     lateinit var mSwitchCamImageButton: ImageButton
+
+    private lateinit var mStillshotContainer:RelativeLayout
+
+    private lateinit var mCloseImageView:ImageView
+
+    private lateinit var mStillImageView:ImageView
     //End View region
 
     //Camera2 Callback  it's = 4 interfaces and abstract classes  region
@@ -149,10 +157,25 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
     private var mImageReader: ImageReader? = null
     //Retrieving  data from mCaptureSession through mImageReader
     private val onImageAvailableListener = ImageReader.OnImageAvailableListener {
-        if (!mImageAvailable) {
+        if (!mIsImageAvailable) {
             mCapturedImage = mImageReader!!.acquireNextImage()
             Log.i(TAG, "Image listener take picture ${mCapturedImage.timestamp}")
+
+            //todo : Solve slow take and save image
+            //Save image in memory but not solve my problem
+            if (activity != null) {
+                activity!!.runOnUiThread {
+
+                    Glide.with(activity!!)
+                        .load(mCapturedImage)
+                        .into(mStillImageView)
+
+                    showStillShotContainer()
+                }
+            }
+
             saveTempImageToStorage()
+
         }
     }
     //End Camera2 callback region
@@ -162,20 +185,25 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
 
     //Listener for SaveImageCallback interface
     //Check value of this variable onImageAvailable
-    private var mImageAvailable = false
+    private var mIsImageAvailable = false
 
     //This variable init inside asyncTask then uploaded into mImageView
-    private lateinit var mCapturedBitmap: Bitmap
+    private  var mCapturedBitmap: Bitmap? = null
     //AsyncTask
     private var mBackgroundImageTask: BackgroundImagerTask? = null
 
     override fun onClick(viewId: View) {
         when (viewId.id) {
             R.id.stillShot_imgView -> {
-                takePicture()
+                if(!mIsImageAvailable){
+                    takePicture()
+                }
             }
             R.id.switchCamOrient -> {
                 toggleCameraDisplayOrientation()
+            }
+            R.id.stillShot_container ->{
+                hideStillShotContainer()
             }
         }
     }
@@ -212,7 +240,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
                     activity!!.showToast("Background thread work now ")
                     mBackgroundImageTask = BackgroundImagerTask(activity!!)
                     mBackgroundImageTask?.execute()
-                    mImageAvailable = true
+                    mIsImageAvailable = true
                     mCapturedImage.close()
                 } else {
                     //Todo call SnackBar here
@@ -378,6 +406,11 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
         view.findViewById<ImageButton>(R.id.stillShot_imgView).setOnClickListener(this)
         mSwitchCamImageButton = view.findViewById(R.id.switchCamOrient)
         mSwitchCamImageButton.setOnClickListener(this)
+        mStillshotContainer = view.findViewById(R.id.stillShot_container)
+        mStillImageView = view.findViewById(R.id.still_temp_imageView)
+        mStillshotContainer.setOnClickListener(this)
+        mCloseImageView = view.findViewById(R.id.close_image_imageView)
+        mCloseImageView.setOnClickListener(this)
         setMaxRatio()
     }
     //Call this function in inOnCreateView
@@ -1043,6 +1076,26 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
         }
 
     }
+
+
+    //Edit Image after captured region
+
+    private fun hideStillShotContainer(){
+       if(mIsImageAvailable){
+           mIsImageAvailable = false
+           mCapturedBitmap = null
+           resetIconVisibilties()
+           reopenCamera()
+
+       }
+    }
+
+
+    private fun resetIconVisibilties(){
+        mStillshotContainer.visibility = INVISIBLE
+    }
+
+    //End edit image region
 }
 
 
