@@ -49,10 +49,9 @@ import java.util.concurrent.TimeUnit
 class Camera2Fragment : BaseFragment(), View.OnClickListener {
 
 
-    //View region
-    //ImageView to display image after take picture
-    private lateinit var mImageView: ImageView
 
+
+    //View region
     /** Object of [AutoFitTextureView] and init in inOnCreateView*/
     private lateinit var mTextureView: AutoFitTextureView
 
@@ -60,11 +59,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
     lateinit var mSwitchCamImageButton: ImageButton
 
     private lateinit var mStillshotContainer:RelativeLayout
-
-    private lateinit var mCloseImageView:ImageView
-
-    //Widgets
-    private lateinit var mCaptureButtonContainer:RelativeLayout
 
     private lateinit var mSwitchToggleContainer:RelativeLayout
 
@@ -168,21 +162,20 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
     //Retrieving  data from mCaptureSession through mImageReader
     private var onImageAvailableListener =
         ImageReader.OnImageAvailableListener {
-            activity!!.showToast("ImageReader Now Call ")
         if (!mIsImageAvailable) {
             mCapturedImage = it!!.acquireNextImage()
             Log.i(TAG, "Image listener take picture ${mCapturedImage.timestamp}")
             //todo : Solve slow take and save image -_- > Problem not here
             //Save image in memory but not solve my problem
-//            if (activity != null) {
-//                activity!!.runOnUiThread {
-//                    Glide.with(activity!!)
-//                        .load(mCapturedImage)
-//                        .into(mImageView)
-//
-//                    showStillShotContainer()
-//                }
-//            }
+            if (activity != null) {
+                activity!!.runOnUiThread {
+                    Glide.with(activity!!)
+                        .load(mCapturedImage)
+                        .into(stillShot_imageView)
+
+                    showStillShotContainer()
+                }
+            }
 
             saveTempImageToStorage()
         }
@@ -196,7 +189,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
     //Check value of this variable onImageAvailable
     private var mIsImageAvailable = false
 
-    //This variable init inside asyncTask then uploaded into mImageView
+    //This variable init inside asyncTask then uploaded into mStillshotImageView
     private  var mCapturedBitmap: Bitmap? = null
     //AsyncTask
     private var mBackgroundImageTask: BackgroundImagerTask? = null
@@ -213,6 +206,11 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
             }
             R.id.close_image_imageView ->{
                 hideStillShotContainer()
+            }
+
+            R.id.pen_draw_imageButton ->{
+
+                activity!!.showToast("Clicked :: ")
             }
         }
     }
@@ -246,7 +244,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
             override fun done(e: Exception?) {
                 //This mean no any error or exception when take pictures
                 if (e == null) {
-                    activity!!.showToast("Background thread work now ")
                     mBackgroundImageTask = BackgroundImagerTask(activity!!)
                     mBackgroundImageTask?.execute()
                     mIsImageAvailable = true
@@ -411,17 +408,15 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
     }
     override fun inOnCreateView(view: View, container: ViewGroup?, bundle: Bundle?) {
         //Relative layout
-        mSwitchToggleContainer = view.findViewById(R.id.switch_toggle_container)
-        mFlashContainer = view.findViewById(R.id.flash_toggle_container)
-        mCaptureButtonContainer = view.findViewById(R.id.capture_button_container)
-        mTextureView = view.findViewById(R.id.camera_textureView)
-        mImageView = view.findViewById(R.id.stillShot_imageView)
+//         view.findViewById<RelativeLayout>(R.id.switch_toggle_container)
+//        view.findViewById<RelativeLayout>(R.id.flash_toggle_container)
+//        view.findViewById<RelativeLayout>(R.id.capture_button_container)
+//        mTextureView = view.findViewById(R.id.camera_textureView)
+//        view.findViewById<RelativeLayout>(R.id.stillShot_container)
         view.findViewById<ImageButton>(R.id.stillShot_imgView).setOnClickListener(this)
-        mSwitchCamImageButton = view.findViewById(R.id.switchCamOrient)
-        mSwitchCamImageButton.setOnClickListener(this)
-        mStillshotContainer = view.findViewById(R.id.stillShot_container)
-        mCloseImageView = view.findViewById(R.id.close_image_imageView)
-        mCloseImageView.setOnClickListener(this)
+        view.findViewById<ImageButton>(R.id.switchCamOrient).setOnClickListener(this)
+        view.findViewById<ImageView>(R.id.close_image_imageView).setOnClickListener(this)
+        view.findViewById<ImageButton>(R.id.pen_draw_imageButton).setOnClickListener(this)
     }
     //Call this function in inOnCreateView
     //This function solve stretching image to full screen for any phones
@@ -452,10 +447,10 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
     override fun onResume() {
         super.onResume()
         startBackgroundHandler()
-        if (mTextureView.isAvailable) {
-            openCamera(mTextureView.width, mTextureView.height)
+        if (camera_textureView.isAvailable) {
+            openCamera(camera_textureView.width, camera_textureView.height)
         } else {
-            mTextureView.surfaceTextureListener = mTextViewSurface
+            camera_textureView.surfaceTextureListener = mTextViewSurface
         }
 
     }
@@ -507,14 +502,15 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
 
 
     private fun reopenCamera() {
-        if (mTextureView.isAvailable) {
-            openCamera(mTextureView.width, mTextureView.height)
+        if (camera_textureView.isAvailable) {
+            openCamera(camera_textureView.width, camera_textureView.height)
         } else {
-            mTextureView.surfaceTextureListener = mTextViewSurface
+            camera_textureView.surfaceTextureListener = mTextViewSurface
         }
     }
 
     private fun setupCameraOutput(width: Int, height: Int) {
+
 
         val manager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager
 
@@ -593,9 +589,9 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
 
             // We fit the aspect ratio of TextureView to the size of preview we picked.
             if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                mTextureView.setAspectRation(mPreviewSize.width, mPreviewSize.height)
+                camera_textureView.setAspectRation(mPreviewSize.width, mPreviewSize.height)
             } else {
-                mTextureView.setAspectRation(mPreviewSize.height, mPreviewSize.width)
+                camera_textureView.setAspectRation(mPreviewSize.height, mPreviewSize.width)
             }
 
 
@@ -725,7 +721,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
         }
 
 
-        mTextureView.setTransform(matrix)
+        camera_textureView.setTransform(matrix)
 
     }
 
@@ -761,7 +757,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
     private fun createCameraPreviewSession() {
 
         try {
-            val texture = mTextureView.surfaceTexture
+            val texture = camera_textureView.surfaceTexture
             //We configure the size of default  buffer to be the size camera preview
             texture.setDefaultBufferSize(mPreviewSize.width, mPreviewSize.height)
             //This is the output surface we need to start preview
@@ -970,10 +966,8 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
         override fun onPostExecute(result: Int?) {
             super.onPostExecute(result)
             if (result == 1) {
-                activity!!.showToast("Done ")
                 displayCaptureImage()
             }else{
-                activity!!.showToast("failed ")
                 Log.d(TAG," Error in doInBackground result != 1")
             }
         }
@@ -993,7 +987,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
                 Glide.with(activity!!)
                     .setDefaultRequestOptions(options)
                     .load(mCapturedBitmap)
-                    .into(mImageView)
+                    .into(stillShot_imageView)
                 showStillShotContainer()
             }
         }
@@ -1001,11 +995,11 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
 
 
     private fun showStillShotContainer() {
-        mSwitchToggleContainer.visibility = INVISIBLE
-        mCaptureButtonContainer.visibility = INVISIBLE
-        mFlashContainer.visibility = INVISIBLE
+        switch_toggle_container.visibility = INVISIBLE
+        capture_button_container.visibility = INVISIBLE
+        flash_toggle_container.visibility = INVISIBLE
         //Set Still shot container visible
-        mStillshotContainer.visibility = VISIBLE
+        stillShot_container.visibility = VISIBLE
         closeCamera()
 
     }
@@ -1111,17 +1105,16 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
            mCapturedBitmap = null
            resetIconVisibilties()
            reopenCamera()
-
        }
     }
 
 
     private fun resetIconVisibilties(){
-        mSwitchToggleContainer.visibility = VISIBLE
-        mCaptureButtonContainer.visibility = VISIBLE
-        mFlashContainer.visibility = VISIBLE
-        //Set Still shot container visible
-        mStillshotContainer.visibility = INVISIBLE
+        switch_toggle_container.visibility = VISIBLE
+        capture_button_container.visibility = VISIBLE
+        flash_toggle_container.visibility = VISIBLE
+        //Still shot container visible contain pen_draw_imageButton and close_image
+        stillShot_container.visibility = INVISIBLE
     }
 
     //End edit image region
