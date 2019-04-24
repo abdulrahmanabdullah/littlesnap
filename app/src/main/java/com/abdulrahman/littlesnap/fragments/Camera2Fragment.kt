@@ -19,12 +19,9 @@ import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.util.Size
 import android.util.SparseIntArray
-import android.view.Surface
-import android.view.TextureView
-import android.view.View
+import android.view.*
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
-import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.RelativeLayout
@@ -46,9 +43,10 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
 //todo : facing camera not take picture in galaxy phones
-class Camera2Fragment : BaseFragment(), View.OnClickListener {
+class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListener {
 
 
+    private var mIsDrawingEnable = false
 
 
     //View region
@@ -196,7 +194,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
 
     override fun onClick(viewId: View) {
         when (viewId.id) {
-            R.id.stillShot_imgView -> {
+            R.id.stillShot_imageButton -> {
                 if(!mIsImageAvailable){
                     takePicture()
                 }
@@ -209,12 +207,20 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
             }
 
             R.id.pen_draw_imageButton ->{
-
-                activity!!.showToast("Clicked :: ")
+                toggleEnableDraw()
             }
         }
     }
 
+
+    override fun onTouch(p0: View?, motionEvent: MotionEvent): Boolean {
+        if(mIsImageAvailable && mIsDrawingEnable){
+            Log.i(TAG,"Start draw ... ")
+            return stillShot_imageView.touchEvent(motionEvent)
+        }
+
+        return true
+    }
     //Redfined width and height in onViewCreate
     private var SCREEN_WIDTH = 0
     private var SCREEN_HEIGHT = 0
@@ -413,10 +419,12 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
 //        view.findViewById<RelativeLayout>(R.id.capture_button_container)
 //        mTextureView = view.findViewById(R.id.camera_textureView)
 //        view.findViewById<RelativeLayout>(R.id.stillShot_container)
-        view.findViewById<ImageButton>(R.id.stillShot_imgView).setOnClickListener(this)
+        view.findViewById<ImageButton>(R.id.stillShot_imageButton).setOnClickListener(this)
         view.findViewById<ImageButton>(R.id.switchCamOrient).setOnClickListener(this)
         view.findViewById<ImageView>(R.id.close_image_imageView).setOnClickListener(this)
         view.findViewById<ImageButton>(R.id.pen_draw_imageButton).setOnClickListener(this)
+        view.findViewById<ImageView>(R.id.stillShot_imageView).setOnTouchListener(this)
+
     }
     //Call this function in inOnCreateView
     //This function solve stretching image to full screen for any phones
@@ -1103,6 +1111,12 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
        if(mIsImageAvailable){
            mIsImageAvailable = false
            mCapturedBitmap = null
+
+           mIsDrawingEnable = false
+           stillShot_imageView.reset()
+           stillShot_imageView.setDrawingEnable(mIsDrawingEnable)
+           stillShot_imageView.setImageBitmap(null)
+
            resetIconVisibilties()
            reopenCamera()
        }
@@ -1118,6 +1132,23 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener {
     }
 
     //End edit image region
+
+
+    //Draw on Image
+
+    fun toggleEnableDraw(){
+        if(mIsDrawingEnable){
+            mIsDrawingEnable = false
+        }
+
+        else{
+            mIsDrawingEnable = true
+            if(stillShot_imageView.getBrushColor() == 0){
+                stillShot_imageView.setBrushColor(Color.WHITE)
+            }
+        }
+        stillShot_imageView.setDrawingEnable(mIsDrawingEnable)
+    }
 }
 
 

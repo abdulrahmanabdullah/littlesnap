@@ -63,7 +63,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/cam_action_stillshot_icon"
-                android:id="@+id/stillShot_imgView"
+                android:id="@+id/stillShot_imageButton"
         />
     </RelativeLayout>
 
