@@ -9,6 +9,7 @@ import android.media.ExifInterface
 import android.media.Image
 import android.media.ImageReader
 import android.net.Uri
+import android.opengl.Visibility
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
@@ -43,7 +44,7 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
 //todo : facing camera not take picture in galaxy phones
-class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListener {
+class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListener , VerticalSlideColorPicker.OnColorChangeListener{
 
 
     private var mIsDrawingEnable = false
@@ -209,6 +210,11 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
             R.id.pen_draw_imageButton ->{
                 toggleEnableDraw()
             }
+
+            R.id.undo_draw_imageButton ->{
+               undoAction()
+            }
+
         }
     }
 
@@ -221,6 +227,13 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
 
         return true
     }
+
+
+    override fun onColorChange(selectedColor: Int) {
+        stillShot_imageView.setBrushColor(selectedColor)
+    }
+
+
     //Redfined width and height in onViewCreate
     private var SCREEN_WIDTH = 0
     private var SCREEN_HEIGHT = 0
@@ -424,6 +437,8 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
         view.findViewById<ImageView>(R.id.close_image_imageView).setOnClickListener(this)
         view.findViewById<ImageButton>(R.id.pen_draw_imageButton).setOnClickListener(this)
         view.findViewById<ImageView>(R.id.stillShot_imageView).setOnTouchListener(this)
+        view.findViewById<VerticalSlideColorPicker>(R.id.color_picker).setOnColorChangeListener(this)
+        view.findViewById<ImageButton>(R.id.undo_draw_imageButton).setOnClickListener(this)
 
     }
     //Call this function in inOnCreateView
@@ -1129,6 +1144,8 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
         flash_toggle_container.visibility = VISIBLE
         //Still shot container visible contain pen_draw_imageButton and close_image
         stillShot_container.visibility = INVISIBLE
+        colors_picker_container.visibility = INVISIBLE
+        undo_draw_container.visibility = INVISIBLE
     }
 
     //End edit image region
@@ -1137,17 +1154,29 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
     //Draw on Image
 
     fun toggleEnableDraw(){
-        if(mIsDrawingEnable){
+
+        if(colors_picker_container.visibility == VISIBLE){
+            colors_picker_container.visibility = INVISIBLE
+            undo_draw_container.visibility = INVISIBLE
             mIsDrawingEnable = false
         }
-
-        else{
-            mIsDrawingEnable = true
+        else if (colors_picker_container.visibility == INVISIBLE){
+            colors_picker_container.visibility = VISIBLE
+            undo_draw_container.visibility = VISIBLE
             if(stillShot_imageView.getBrushColor() == 0){
                 stillShot_imageView.setBrushColor(Color.WHITE)
             }
+            mIsDrawingEnable = true
         }
+//        else{
+//        }
         stillShot_imageView.setDrawingEnable(mIsDrawingEnable)
+    }
+
+    private fun undoAction(){
+        if(colors_picker_container.visibility == VISIBLE){
+            stillShot_imageView.removeLastDraw()
+        }
     }
 }
 
