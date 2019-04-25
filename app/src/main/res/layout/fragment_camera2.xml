@@ -128,5 +128,33 @@
 
         </RelativeLayout>
         <!--End edit picture-->
+
+        <!--Colors Picker -->
+        <RelativeLayout
+                android:id="@+id/colors_picker_container"
+                android:layout_alignParentEnd="true"
+                android:layout_below="@id/pen_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+            <!--Custom view -->
+        </RelativeLayout>
+
+
+        <!--Undo container -->
+        <RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                       android:id="@+id/undo_draw_container"
+                        android:layout_toLeftOf="@id/pen_container"
+        >
+           <ImageButton
+                    android:src="@drawable/ic_undo"
+                   android:layout_width="45dp"
+                   android:layout_height="45dp"
+           />
+
+        </RelativeLayout>
     </RelativeLayout>
+
+
+
 </RelativeLayout>
