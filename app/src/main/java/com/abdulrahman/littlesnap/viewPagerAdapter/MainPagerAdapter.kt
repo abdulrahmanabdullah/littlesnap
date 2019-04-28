@@ -35,4 +35,22 @@ class MainPagerAdapter constructor(fm:FragmentManager): FragmentStatePagerAdapte
     }
 
     override fun getCount(): Int  = 3
+
+    override fun getPageTitle(position: Int): CharSequence? {
+        return when(position){
+           0 ->{
+               "Chat"
+           }
+            1 ->{
+                "Search"
+            }
+
+            2 ->{
+                "Stories"
+            }
+            else->{
+                " "
+            }
+        }
+    }
 }

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent" xmlns:tools="http://schemas.android.com/tools"
+        tools:background="@color/Black"
+        android:layout_height="184dp"
+        android:layout_gravity="bottom"
+>
+
+    <ImageView
+            android:id="@+id/tab_center_imageView"
+            android:layout_width="88dp" android:layout_height="88dp"
+            android:layout_gravity="center|bottom"
+            android:src="@drawable/largest_circle"
+            android:layout_marginBottom="96dp"/>
+
+    <ImageView android:layout_width="32dp" android:layout_height="32dp" android:layout_gravity="start|bottom"
+               android:id="@+id/tab_start_imageView"
+               android:layout_marginBottom="56dp"
+               android:layout_marginStart="24dp"
+               android:src="@drawable/ic_chat_bubble"
+    />
+    <ImageView android:layout_width="32dp"
+               android:layout_height="32dp" android:layout_gravity="end|bottom"
+               android:layout_marginBottom="56dp"
+               android:id="@+id/tab_end_imageView"
+               android:layout_marginEnd="24dp"
+               android:src="@drawable/ic_group_work"
+    />
+    <ImageView android:layout_width="32dp" android:layout_height="32dp" android:layout_gravity="center|bottom"
+               android:layout_marginBottom="48dp"
+               android:id="@+id/tab_bottom_imageView"
+               android:src="@drawable/smallest_circle"
+    />
+
+    <!--Indicator-->
+    <View
+            android:layout_gravity="center|bottom"
+            android:layout_width="48dp"
+            android:id="@+id/tab_indicator_view"
+            android:background="@drawable/indcator_background"
+            android:layout_height="4dp"
+            android:layout_marginBottom="40dp"
+    />
+
+</FrameLayout>

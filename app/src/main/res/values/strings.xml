@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">LittleSnap</string>
+    <string name="rationale_ask">Need camera permissions</string>
 </resources>

@@ -15,6 +15,7 @@ import com.abdulrahman.littlesnap.utlities.PERMISSIONS
 import com.abdulrahman.littlesnap.utlities.REQUEST_CAMERA_PERMISSIONS
 import com.abdulrahman.littlesnap.utlities.showToast
 import com.abdulrahman.littlesnap.viewPagerAdapter.MainPagerAdapter
+import com.abdulrahman.littlesnap.viewPagerAdapter.SnapTabView
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() , CameraIdCallback {
@@ -62,7 +63,12 @@ class MainActivity : AppCompatActivity() , CameraIdCallback {
         setContentView(R.layout.activity_main)
         mBackgroundColor = findViewById(R.id.main_background_view)
         val adapter = MainPagerAdapter(supportFragmentManager)
+        //ViewPager
         main_viewPager.adapter = adapter
+        //TabLayout
+        val snapTabLayout :SnapTabView = findViewById(R.id.tablayout_main)
+        snapTabLayout.setupSnapTabViewListener(main_viewPager)
+
         //todo create this listener as a lambda
         main_viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
 
@@ -89,6 +95,9 @@ class MainActivity : AppCompatActivity() , CameraIdCallback {
             }
 
         })
+        //Open Camera2 fragment
+        main_viewPager.currentItem = 1
+
     }
 
 

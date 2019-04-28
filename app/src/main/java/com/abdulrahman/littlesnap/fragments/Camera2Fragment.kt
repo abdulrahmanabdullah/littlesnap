@@ -1154,7 +1154,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
     //Draw on Image
 
     fun toggleEnableDraw(){
-
         if(colors_picker_container.visibility == VISIBLE){
             colors_picker_container.visibility = INVISIBLE
             undo_draw_container.visibility = INVISIBLE
@@ -1168,8 +1167,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
             }
             mIsDrawingEnable = true
         }
-//        else{
-//        }
         stillShot_imageView.setDrawingEnable(mIsDrawingEnable)
     }
 
