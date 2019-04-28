@@ -432,7 +432,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
 //        view.findViewById<RelativeLayout>(R.id.capture_button_container)
 //        mTextureView = view.findViewById(R.id.camera_textureView)
 //        view.findViewById<RelativeLayout>(R.id.stillShot_container)
-        view.findViewById<ImageButton>(R.id.stillShot_imageButton).setOnClickListener(this)
+        view.findViewById<ImageView>(R.id.stillShot_imageButton).setOnClickListener(this)
         view.findViewById<ImageButton>(R.id.switchCamOrient).setOnClickListener(this)
         view.findViewById<ImageView>(R.id.close_image_imageView).setOnClickListener(this)
         view.findViewById<ImageButton>(R.id.pen_draw_imageButton).setOnClickListener(this)
@@ -458,7 +458,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
     override fun onAttach(context: Context?) {
         super.onAttach(context)
         mCameraIdCallback = activity as CameraIdCallback
-        Log.i("main", "Camera fragment is attach")
+        Log.i("xyz", "Camera fragment is attach")
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

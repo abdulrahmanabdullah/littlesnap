@@ -59,10 +59,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
-        <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/cam_action_stillshot_icon"
+        <ImageView
+                android:layout_width="88dp"
+                android:src="@drawable/largest_circle"
+                android:layout_marginBottom="96dp"
+                android:layout_height="88dp"
                 android:id="@+id/stillShot_imageButton"
         />
     </RelativeLayout>

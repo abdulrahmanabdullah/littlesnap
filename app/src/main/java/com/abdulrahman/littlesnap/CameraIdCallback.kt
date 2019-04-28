@@ -18,4 +18,5 @@ interface CameraIdCallback {
     fun getFrontCameraId():String
 
     fun getBackCameraId() :String
+
 }

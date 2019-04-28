@@ -11,7 +11,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
-import android.widget.ImageView
 import com.abdulrahman.littlesnap.R
 import kotlinx.android.synthetic.main.view_snap_tab_laytou.view.*
 
@@ -55,32 +54,43 @@ class SnapTabView
 
     }
     override fun onPageScrollStateChanged(p0: Int) {
+        when(p0){
+            1 ->{
+                Log.i("snap"," Here we pass onto camera fragment ")
+            }
+        }
 
     }
 
     override fun onPageScrolled(position: Int, postionOffset: Float, p2: Int) {
+        //When move to chat fragment
        if(position == 0 ){
            setColor(1 - postionOffset)
            moveView(1 - postionOffset)
            tab_indicator_view.translationX = (postionOffset -1 ) * mIndcaitorTranslationx
            moveAndScaleCenter(1 - postionOffset)
+           tab_center_imageView.visibility = VISIBLE
        }
+        //Hide tab_center_imageView
         else if (position == 1 ){
            setColor(postionOffset)
            moveView(postionOffset)
+           tab_center_imageView.visibility = INVISIBLE
            tab_indicator_view.translationX = (postionOffset) * mIndcaitorTranslationx
            moveAndScaleCenter( postionOffset)
+       }
+
+        //When move to story fragment
+        else if (position == 2) {
+           moveView(1 - postionOffset)
+           moveAndScaleCenter(1 - postionOffset)
+           tab_center_imageView.visibility = VISIBLE
        }
     }
 
 
 
     override fun onPageSelected(position: Int) {
-        when(position){
-            1 -> {
-                Log.i("snap","Here Call camera 2 fragment ")
-            }
-        }
 
     }
 
@@ -103,7 +113,7 @@ class SnapTabView
     }
 
     private fun moveAndScaleCenter(fractionFromCenter:Float){
-        var scale = .7f + ( (1 - fractionFromCenter) * .3f)
+        val scale = .7f + ( (1 - fractionFromCenter) * .3f)
         tab_center_imageView.scaleX = scale
         tab_center_imageView.scaleY = scale
         val translation = mCenterTranstionY.times(fractionFromCenter)
@@ -114,9 +124,11 @@ class SnapTabView
 
     }
     private lateinit var mViewPager: ViewPager
+
     fun setupSnapTabViewListener(viewPager: ViewPager){
         mViewPager = viewPager
         mViewPager.addOnPageChangeListener(this)
+        tab_center_imageView.visibility = View.INVISIBLE
         tab_center_imageView.setOnClickListener(this)
         tab_start_imageView.setOnClickListener(this)
         tab_end_imageView.setOnClickListener(this)
