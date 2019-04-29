@@ -39,7 +39,7 @@ class DrawableImageView : AppCompatImageView {
         init(context)
     }
 
-    private class Pen(val color: Int, val width: Float) {
+    private class Pen(val color: Int) {
 
         internal var path: Path
         internal var paint: Paint
@@ -48,7 +48,7 @@ class DrawableImageView : AppCompatImageView {
             path = Path()
             paint = Paint()
             paint.isAntiAlias = true
-            paint.strokeWidth = width
+            paint.strokeWidth = 20f
             paint.color = color
             paint.style = Paint.Style.STROKE
             paint.strokeJoin = Paint.Join.ROUND
@@ -58,7 +58,7 @@ class DrawableImageView : AppCompatImageView {
 
 
     private fun init(context: Context) {
-        mPenList.add(Pen(color, width))
+        mPenList.add(Pen(color))
         setDrawingEnable(true)
         if (context is Activity) {
             mHostActivity = context as Activity
@@ -84,7 +84,7 @@ class DrawableImageView : AppCompatImageView {
             when (motionEvent.action) {
                 MotionEvent.ACTION_DOWN -> {
                     Log.i(TAG,"Action Down ")
-                    mPenList.add(Pen(color, width))
+                    mPenList.add(Pen(color))
                     mPenList[mPenList.size - 1].path.moveTo(eventX, eventY)
                     return true
                 }

@@ -14,6 +14,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.provider.MediaStore
+import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.util.Log
@@ -28,6 +29,7 @@ import android.widget.RelativeLayout
 import com.abdulrahman.littlesnap.*
 import com.abdulrahman.littlesnap.utlities.PIC_FILE_NAME
 import com.abdulrahman.littlesnap.utlities.TAG
+import com.abdulrahman.littlesnap.utlities.showSnackBar
 import com.abdulrahman.littlesnap.utlities.showToast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -45,6 +47,9 @@ import java.util.concurrent.TimeUnit
 //todo : facing camera not take picture in galaxy phones
 class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListener , VerticalSlideColorPicker.OnColorChangeListener{
 
+
+//    //This element to show SnackBar
+//    private lateinit var mView:View
 
     private var mIsDrawingEnable = false
 
@@ -846,7 +851,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
 
     //Take Camera Picture region
     private fun takePicture() {
-
         lockFocus()
     }
 
