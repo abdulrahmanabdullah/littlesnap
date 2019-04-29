@@ -59,11 +59,13 @@ class MainActivity : AppCompatActivity(), CameraIdCallback {
 
     override fun showTabLayoutIcons() {
         mSnapTabView.showIcons()
+        //Enable swipeable
         mViewPager.setSwipe(true)
     }
 
     override fun hideTabLayoutIcons() {
         mSnapTabView.hideIcons()
+        //Disable swipeable
         mViewPager.setSwipe(false)
     }
     //End region
