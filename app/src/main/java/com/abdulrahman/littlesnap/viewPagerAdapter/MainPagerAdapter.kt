@@ -53,4 +53,5 @@ class MainPagerAdapter constructor(fm:FragmentManager): FragmentStatePagerAdapte
             }
         }
     }
+
 }

@@ -76,7 +76,7 @@ class DrawableImageView : AppCompatImageView {
 
     //Call this func when user click pen to draw .
     fun touchEvent(motionEvent: MotionEvent): Boolean {
-//        hideStatusBar()
+//        hideTabLayoutIcons()
         if (mIsDrawingEnable) {
             val eventX = motionEvent.x
             val eventY = motionEvent.y

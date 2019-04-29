@@ -155,8 +155,19 @@ class SnapTabView
                   mViewPager.currentItem = 2
               }
           }
-
-
       }
+    }
+
+    fun hideIcons(){
+        tab_center_imageView.visibility = INVISIBLE
+        tab_start_imageView.visibility = INVISIBLE
+        tab_end_imageView.visibility = INVISIBLE
+        tab_bottom_imageView.visibility = INVISIBLE
+    }
+
+    fun showIcons(){
+        tab_start_imageView.visibility = VISIBLE
+        tab_end_imageView.visibility = VISIBLE
+        tab_bottom_imageView.visibility = VISIBLE
     }
 }

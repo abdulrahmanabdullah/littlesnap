@@ -18,11 +18,11 @@ import com.abdulrahman.littlesnap.viewPagerAdapter.MainPagerAdapter
 import com.abdulrahman.littlesnap.viewPagerAdapter.SnapTabView
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity() , CameraIdCallback {
-
+class MainActivity : AppCompatActivity(), CameraIdCallback {
+    private lateinit var mSnapTabView: SnapTabView
     companion object {
-          var CAMERA_POSITION_FRONT:String = ""
-          var CAMERA_POSITION_BACK:String = ""
+        var CAMERA_POSITION_FRONT: String = ""
+        var CAMERA_POSITION_BACK: String = ""
     }
 
     //Implementation CameraIdCallback Region
@@ -41,22 +41,31 @@ class MainActivity : AppCompatActivity() , CameraIdCallback {
     override fun setBackCameraId(cameraId: String) {
         CAMERA_POSITION_BACK = cameraId
     }
+
     override fun setCameraBackFacing() {
         mCameraOriention = CAMERA_POSITION_BACK
     }
 
-    override fun isCameraFrontFacing(): Boolean  = mCameraOriention == CAMERA_POSITION_FRONT
+    override fun isCameraFrontFacing(): Boolean = mCameraOriention == CAMERA_POSITION_FRONT
 
     override fun isCameraBackFacing(): Boolean = mCameraOriention == CAMERA_POSITION_BACK
 
-    override fun getFrontCameraId():String = CAMERA_POSITION_FRONT
+    override fun getFrontCameraId(): String = CAMERA_POSITION_FRONT
 
-    override fun getBackCameraId():String = CAMERA_POSITION_BACK
+    override fun getBackCameraId(): String = CAMERA_POSITION_BACK
 
+
+    override fun showTabLayoutIcons() {
+        mSnapTabView.showIcons()
+    }
+
+    override fun hideTabLayoutIcons() {
+        mSnapTabView.hideIcons()
+    }
     //End region
 
 
-    lateinit var mBackgroundColor:View
+    lateinit var mBackgroundColor: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,8 +75,8 @@ class MainActivity : AppCompatActivity() , CameraIdCallback {
         //ViewPager
         main_viewPager.adapter = adapter
         //TabLayout
-        val snapTabLayout :SnapTabView = findViewById(R.id.tablayout_main)
-        snapTabLayout.setupSnapTabViewListener(main_viewPager)
+        mSnapTabView = findViewById(R.id.tablayout_main)
+        mSnapTabView.setupSnapTabViewListener(main_viewPager)
 
         //todo create this listener as a lambda
         main_viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
@@ -76,16 +85,16 @@ class MainActivity : AppCompatActivity() , CameraIdCallback {
             }
 
             override fun onPageScrolled(position: Int, p1: Float, p2: Int) {
-                when(position){
-                    0-> { // Chat fragment
+                when (position) {
+                    0 -> { // Chat fragment
                         checkApiLevelAndColor(R.color.chat_background_color)
                         mBackgroundColor.alpha = 1 - p1
                     }
-                    1 ->{
+                    1 -> {
                         checkApiLevelAndColor(R.color.camera_background_color)
-                        mBackgroundColor.alpha =  p1
+                        mBackgroundColor.alpha = p1
                     }
-                    else ->{
+                    else -> {
                         checkApiLevelAndColor(R.color.story_background_color)
                     }
                 }
@@ -102,13 +111,14 @@ class MainActivity : AppCompatActivity() , CameraIdCallback {
 
 
     //todo : remove this function
-    fun checkApiLevelAndColor(colorId:Int){
-       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-           mBackgroundColor.setBackgroundColor(getColor(colorId))
-       }else{
-           // set default background
-       }
+    fun checkApiLevelAndColor(colorId: Int) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mBackgroundColor.setBackgroundColor(getColor(colorId))
+        } else {
+            // set default background
+        }
     }
+
     //Set full screen view
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)

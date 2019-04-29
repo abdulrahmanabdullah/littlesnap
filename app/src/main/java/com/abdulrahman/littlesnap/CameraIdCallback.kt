@@ -19,4 +19,7 @@ interface CameraIdCallback {
 
     fun getBackCameraId() :String
 
+
+    fun showTabLayoutIcons()
+    fun hideTabLayoutIcons()
 }

@@ -9,7 +9,6 @@ import android.media.ExifInterface
 import android.media.Image
 import android.media.ImageReader
 import android.net.Uri
-import android.opengl.Visibility
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
@@ -470,11 +469,18 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
     override fun onResume() {
         super.onResume()
         startBackgroundHandler()
-        if (camera_textureView.isAvailable) {
-            openCamera(camera_textureView.width, camera_textureView.height)
-        } else {
-            camera_textureView.surfaceTextureListener = mTextViewSurface
+
+        if(mIsImageAvailable){
+            mCameraIdCallback.hideTabLayoutIcons()
+        }else{
+            mCameraIdCallback.showTabLayoutIcons()
+            reopenCamera()
         }
+//        if (camera_textureView.isAvailable) {
+//            openCamera(camera_textureView.width, camera_textureView.height)
+//        } else {
+//            camera_textureView.surfaceTextureListener = mTextViewSurface
+//        }
 
     }
 
@@ -840,6 +846,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
 
     //Take Camera Picture region
     private fun takePicture() {
+
         lockFocus()
     }
 
@@ -1023,6 +1030,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
         flash_toggle_container.visibility = INVISIBLE
         //Set Still shot container visible
         stillShot_container.visibility = VISIBLE
+        mCameraIdCallback.hideTabLayoutIcons()
         closeCamera()
 
     }
@@ -1123,6 +1131,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
     //Edit Image after captured region
 
     private fun hideStillShotContainer(){
+        mCameraIdCallback.showTabLayoutIcons()
        if(mIsImageAvailable){
            mIsImageAvailable = false
            mCapturedBitmap = null
