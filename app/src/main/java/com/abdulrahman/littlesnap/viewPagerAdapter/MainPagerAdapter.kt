@@ -12,9 +12,12 @@ import java.lang.NullPointerException
 class MainPagerAdapter constructor(fm:FragmentManager): FragmentStatePagerAdapter(fm) {
 
 
-    override fun getItemPosition(`object`: Any): Int {
-        return PagerAdapter.POSITION_NONE
-    }
+//    override fun getItemPosition(`object`: Any): Int {
+//        return PagerAdapter.POSITION_NONE
+//    }
+
+
+
 
 
     override fun getItem(position: Int): Fragment {

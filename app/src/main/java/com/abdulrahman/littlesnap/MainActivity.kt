@@ -15,11 +15,13 @@ import com.abdulrahman.littlesnap.utlities.PERMISSIONS
 import com.abdulrahman.littlesnap.utlities.REQUEST_CAMERA_PERMISSIONS
 import com.abdulrahman.littlesnap.utlities.showToast
 import com.abdulrahman.littlesnap.viewPagerAdapter.MainPagerAdapter
+import com.abdulrahman.littlesnap.viewPagerAdapter.MainViewPager
 import com.abdulrahman.littlesnap.viewPagerAdapter.SnapTabView
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), CameraIdCallback {
     private lateinit var mSnapTabView: SnapTabView
+    private lateinit var mViewPager:MainViewPager
     companion object {
         var CAMERA_POSITION_FRONT: String = ""
         var CAMERA_POSITION_BACK: String = ""
@@ -57,10 +59,12 @@ class MainActivity : AppCompatActivity(), CameraIdCallback {
 
     override fun showTabLayoutIcons() {
         mSnapTabView.showIcons()
+        mViewPager.setSwipe(true)
     }
 
     override fun hideTabLayoutIcons() {
         mSnapTabView.hideIcons()
+        mViewPager.setSwipe(false)
     }
     //End region
 
@@ -73,13 +77,14 @@ class MainActivity : AppCompatActivity(), CameraIdCallback {
         mBackgroundColor = findViewById(R.id.main_background_view)
         val adapter = MainPagerAdapter(supportFragmentManager)
         //ViewPager
-        main_viewPager.adapter = adapter
+        mViewPager = findViewById(R.id.main_viewPager)
+        mViewPager.adapter = adapter
         //TabLayout
         mSnapTabView = findViewById(R.id.tablayout_main)
-        mSnapTabView.setupSnapTabViewListener(main_viewPager)
+        mSnapTabView.setupSnapTabViewListener(mViewPager)
 
         //todo create this listener as a lambda
-        main_viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+        mViewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
 
             override fun onPageScrollStateChanged(position: Int) {
             }
@@ -105,7 +110,7 @@ class MainActivity : AppCompatActivity(), CameraIdCallback {
 
         })
         //Open Camera2 fragment
-        main_viewPager.currentItem = 1
+       mViewPager.currentItem = 1
 
     }
 
