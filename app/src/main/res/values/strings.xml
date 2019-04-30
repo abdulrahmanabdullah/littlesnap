@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">LittleSnap</string>
     <string name="rationale_ask">Need camera permissions</string>
+    <string name="save_picture_str">Save</string>
 </resources>

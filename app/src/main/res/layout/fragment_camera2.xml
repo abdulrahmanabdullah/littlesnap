@@ -106,6 +106,7 @@
 
 
         </RelativeLayout>
+
         <!--To draw on image -->
         <RelativeLayout
                 android:layout_alignParentEnd="true"
@@ -128,7 +129,7 @@
                     android:layout_height="45dp"/>
 
         </RelativeLayout>
-        <!--End edit picture-->
+        <!--End draw-->
 
         <!--Colors Picker -->
         <RelativeLayout
@@ -167,7 +168,36 @@
             />
 
         </RelativeLayout>
-    </RelativeLayout>
+
+        <!--Save picture container -->
+        <android.support.constraint.ConstraintLayout
+                android:layout_alignParentBottom="true"
+                android:layout_marginStart="8dp"
+                android:layout_marginBottom="16dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/save_picture_container
+">
+
+            <ImageView
+                    android:id="@+id/save_picture_imageView"
+                    android:layout_width="wrap_content"
+                    android:src="@drawable/save_icon"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginBottom="8dp" app:layout_constraintBottom_toTopOf="@+id/save_picture_textView"
+                    app:layout_constraintEnd_toEndOf="@+id/save_picture_textView" android:layout_marginStart="8dp"/>
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/save_picture_textView" app:layout_constraintBottom_toBottomOf="parent"
+                    android:text="@string/save_picture_str"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body1" android:fontFamily="sans-serif"
+                    android:typeface="serif" android:textSize="18sp" android:textColor="@color/white"
+                    app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="8dp"/>
+        </android.support.constraint.ConstraintLayout>
+        <!--End Save picture -->
+
+    </RelativeLayout> <!-- End stillShot_container -->
 
 
 </RelativeLayout>

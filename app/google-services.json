@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "919538941229",
+    "firebase_url": "https://littlesnap-dda3d.firebaseio.com",
+    "project_id": "littlesnap-dda3d",
+    "storage_bucket": "littlesnap-dda3d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:919538941229:android:46010a98ccbb7722",
+        "android_client_info": {
+          "package_name": "com.abdulrahman.littlesnap"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "919538941229-sdupn26vk2ip3fmm8q22vd9ep6gbtkrm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.abdulrahman.littlesnap",
+            "certificate_hash": "c06a01b9cdddb4998fb7260c31db1f330ef55250"
+          }
+        },
+        {
+          "client_id": "919538941229-0v8btnjjl90n927hp320k0g98knie9uh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCeP-_ZgNaQrwycpPHrMRQwLscRNWV2Zqw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "919538941229-0v8btnjjl90n927hp320k0g98knie9uh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

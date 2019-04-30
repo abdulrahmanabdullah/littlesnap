@@ -35,17 +35,17 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
 import kotlinx.android.synthetic.main.fragment_camera2.*
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
 import java.lang.Exception
 import java.lang.NullPointerException
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
 //todo : facing camera not take picture in galaxy phones
-class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListener , VerticalSlideColorPicker.OnColorChangeListener{
+class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListener,
+    VerticalSlideColorPicker.OnColorChangeListener {
 
 
 //    //This element to show SnackBar
@@ -61,11 +61,11 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
     //This button for switch front and back cam
     lateinit var mSwitchCamImageButton: ImageButton
 
-    private lateinit var mStillshotContainer:RelativeLayout
+    private lateinit var mStillshotContainer: RelativeLayout
 
-    private lateinit var mSwitchToggleContainer:RelativeLayout
+    private lateinit var mSwitchToggleContainer: RelativeLayout
 
-    private lateinit var mFlashContainer:RelativeLayout
+    private lateinit var mFlashContainer: RelativeLayout
 
     //End View region
 
@@ -165,24 +165,24 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
     //Retrieving  data from mCaptureSession through mImageReader
     private var onImageAvailableListener =
         ImageReader.OnImageAvailableListener {
-        if (!mIsImageAvailable) {
-            mCapturedImage = it!!.acquireNextImage()
-            Log.i(TAG, "Image listener take picture ${mCapturedImage.timestamp}")
-            //todo : Solve slow take and save image -_- > Problem not here
-            //Save image in memory but not solve my problem
-            if (activity != null) {
-                activity!!.runOnUiThread {
-                    Glide.with(activity!!)
-                        .load(mCapturedImage)
-                        .into(stillShot_imageView)
+            if (!mIsImageAvailable) {
+                mCapturedImage = it!!.acquireNextImage()
+//            Log.i(TAG, "Image listener take picture ${mCapturedImage?.timestamp}")
+                //todo : Solve slow take and save image -_- > Problem not here
+                //Save image in memory but not solve my problem
+                if (activity != null) {
+                    activity!!.runOnUiThread {
+                        Glide.with(activity!!)
+                            .load(mCapturedImage)
+                            .into(stillShot_imageView)
 
-                    showStillShotContainer()
+                        showStillShotContainer()
+                    }
                 }
-            }
 
-            saveTempImageToStorage()
+                saveTempImageToStorage()
+            }
         }
-    }
     //End Camera2 callback region
 
     //Listener for which camera used front or back  init this interface in onAttach
@@ -193,39 +193,42 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
     private var mIsImageAvailable = false
 
     //This variable init inside asyncTask then uploaded into mStillshotImageView
-    private  var mCapturedBitmap: Bitmap? = null
+    private var mCapturedBitmap: Bitmap? = null
     //AsyncTask
     private var mBackgroundImageTask: BackgroundImagerTask? = null
 
     override fun onClick(viewId: View) {
         when (viewId.id) {
             R.id.stillShot_imageButton -> {
-                if(!mIsImageAvailable){
+                if (!mIsImageAvailable) {
                     takePicture()
                 }
             }
             R.id.switchCamOrient -> {
                 toggleCameraDisplayOrientation()
             }
-            R.id.close_image_imageView ->{
+            R.id.close_image_imageView -> {
                 hideStillShotContainer()
             }
 
-            R.id.pen_draw_imageButton ->{
+            R.id.pen_draw_imageButton -> {
                 toggleEnableDraw()
             }
 
-            R.id.undo_draw_imageButton ->{
-               undoAction()
+            R.id.undo_draw_imageButton -> {
+                undoAction()
             }
 
+            R.id.save_picture_imageView -> {
+                savePictureToDisk()
+            }
         }
     }
 
 
     override fun onTouch(p0: View?, motionEvent: MotionEvent): Boolean {
-        if(mIsImageAvailable && mIsDrawingEnable){
-            Log.i(TAG,"Start draw ... ")
+        if (mIsImageAvailable && mIsDrawingEnable) {
+            Log.i(TAG, "Start draw ... ")
             return stillShot_imageView.touchEvent(motionEvent)
         }
 
@@ -255,12 +258,11 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
     private lateinit var mFile: File
 
 
-
-
     /**
      * This function for  ImageSaver class and create image bitmap
      * And call asyc task to save image
      */
+    //Todo : remove this function and replace it with savePictureToDisk
     private fun saveTempImageToStorage() {
         //Check Save image Callback interface ...
         val callBack = object : SaveImageCallback {
@@ -270,7 +272,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
                     mBackgroundImageTask = BackgroundImagerTask(activity!!)
                     mBackgroundImageTask?.execute()
                     mIsImageAvailable = true
-                    mCapturedImage.close()
+                    mCapturedImage?.close()
                 } else {
                     //Todo call SnackBar here
                     activity!!.showToast(" Some error occured ${e.message}")
@@ -299,8 +301,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
     private var mSensorsOrientation = 0
 
     //init it in setupCameraOutputs
-    private lateinit var mCapturedImage: Image
-
+    private var mCapturedImage: Image? = null
 
     /**
      * Camera mState: Showing camera preview.
@@ -429,6 +430,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
     override fun getLayoutResId(): Int {
         return R.layout.fragment_camera2
     }
+
     override fun inOnCreateView(view: View, container: ViewGroup?, bundle: Bundle?) {
         //Relative layout
 //         view.findViewById<RelativeLayout>(R.id.switch_toggle_container)
@@ -443,8 +445,10 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
         view.findViewById<ImageView>(R.id.stillShot_imageView).setOnTouchListener(this)
         view.findViewById<VerticalSlideColorPicker>(R.id.color_picker).setOnColorChangeListener(this)
         view.findViewById<ImageButton>(R.id.undo_draw_imageButton).setOnClickListener(this)
+        view.findViewById<ImageView>(R.id.save_picture_imageView).setOnClickListener(this)
 
     }
+
     //Call this function in inOnCreateView
     //This function solve stretching image to full screen for any phones
     private fun setMaxRatio() {
@@ -475,9 +479,9 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
         super.onResume()
         startBackgroundHandler()
 
-        if(mIsImageAvailable){
+        if (mIsImageAvailable) {
             mCameraIdCallback.hideTabLayoutIcons()
-        }else{
+        } else {
             mCameraIdCallback.showTabLayoutIcons()
             reopenCamera()
         }
@@ -500,7 +504,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
         }
     }
     //End Lifecycle region
-
 
 
     //Open and setup camera region
@@ -608,7 +611,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
                 largest.width,
                 largest.height, ImageFormat.JPEG, 2
             )
-            mImageReader?.setOnImageAvailableListener(onImageAvailableListener,mBackgroundHandler)
+            mImageReader?.setOnImageAvailableListener(onImageAvailableListener, mBackgroundHandler)
 
             //init Camera preview size ::
             mPreviewSize = chooseOptimalSize(
@@ -709,7 +712,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
         }
 
     }
-
 
 
     private fun configTransForm(viewWidth: Int, viewHeight: Int) {
@@ -828,8 +830,10 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
                             //todo : enable flash when camera have it .
                             //finally start displaying the camera preview
                             mCaptureRequest = mCaptureRequestBuilder.build()
-                            mCaptureSession?.setRepeatingRequest(mCaptureRequest,
-                                mCaptureCallback, mBackgroundHandler)
+                            mCaptureSession?.setRepeatingRequest(
+                                mCaptureRequest,
+                                mCaptureCallback, mBackgroundHandler
+                            )
                         } catch (e: CameraAccessException) {
                             Log.d(TAG, "onConfigured camera preview ${e.message}")
                         }
@@ -979,8 +983,8 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
         override fun doInBackground(vararg p0: Void?): Int {
 
             val file = File(context?.getExternalFilesDir(null), PIC_FILE_NAME)
-            val tempImageUri:Uri = Uri.fromFile(file)
-            Log.d(TAG,"Check file path ${tempImageUri.path}")
+            val tempImageUri: Uri = Uri.fromFile(file)
+            Log.d(TAG, "Check file path ${tempImageUri.path}")
             var bitMap: Bitmap? = null
             try {
                 val exif = ExifInterface(tempImageUri.path)
@@ -991,7 +995,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
                 mCapturedBitmap = rotateBitmap(orientation, bitMap)!!
 
             } catch (e: IOException) {
-                Log.d(TAG,"doInBackground ${e.message}")
+                Log.d(TAG, "doInBackground ${e.message}")
                 return 0
             }
             return 1
@@ -1001,8 +1005,8 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
             super.onPostExecute(result)
             if (result == 1) {
                 displayCaptureImage()
-            }else{
-                Log.d(TAG," Error in doInBackground result != 1")
+            } else {
+                Log.d(TAG, " Error in doInBackground result != 1")
             }
         }
 
@@ -1096,11 +1100,29 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
     }
 
     //Class for save image
-    class ImageSaver(private val image: Image?, private val file: File, private val callback: SaveImageCallback?) :Runnable {
+    class ImageSaver : Runnable {
+
+        var image: Image? = null
+        var file: File
+        var callback: SaveImageCallback? = null
+        var bitmap: Bitmap? = null
+
+        constructor(image: Image?, file: File, callback: SaveImageCallback?) {
+            this.image = image
+            this.file = file
+            this.callback = callback
+        }
+
+        constructor(bitmap: Bitmap, file: File, callback: SaveImageCallback?) {
+            this.bitmap = bitmap
+            this.file = file
+            this.callback = callback
+        }
+
 
         override fun run() {
             if (image != null) {
-                val buffer = image.planes[0].buffer
+                val buffer = image!!.planes[0].buffer
                 val bytes = ByteArray(buffer.remaining())
                 buffer.get(bytes)
                 var outputStream: FileOutputStream? = null
@@ -1114,7 +1136,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
                     Log.d(TAG, " ImageSaver throw exception ${e.message}")
                     callback!!.done(e)
                 } finally {
-                    image.close()
+                    image?.close()
                     outputStream?.let {
                         try {
                             it.close()
@@ -1127,6 +1149,34 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
                 }
 
             }
+            //Save image to disk after draw
+            else if (bitmap != null) {
+                var stream: ByteArrayOutputStream? = null
+                var imageByteArray: ByteArray? = null
+                stream = ByteArrayOutputStream()
+                bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+                imageByteArray = stream.toByteArray()
+                val dateFormate = SimpleDateFormat("ddMMyyyyhhmmss")
+                val formate = dateFormate.format(Date())
+                val f = File(file, "_image$formate.jpg")
+                //Save mirrored array
+                var output: FileOutputStream? = null
+                try {
+                    output = FileOutputStream(f)
+                    output.write(imageByteArray)
+                } catch (e: IOException) {
+                    callback?.done(e)
+                } finally {
+                    if(null != output){
+                        try{
+                            output.close()
+                        }catch (e:Exception){
+                            e.printStackTrace()
+                        }
+                    }
+                    callback?.done(null)
+                }
+            }
         }
 
     }
@@ -1134,24 +1184,24 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
 
     //Edit Image after captured region
 
-    private fun hideStillShotContainer(){
+    private fun hideStillShotContainer() {
         mCameraIdCallback.showTabLayoutIcons()
-       if(mIsImageAvailable){
-           mIsImageAvailable = false
-           mCapturedBitmap = null
+        if (mIsImageAvailable) {
+            mIsImageAvailable = false
+            mCapturedBitmap = null
 
-           mIsDrawingEnable = false
-           stillShot_imageView.reset()
-           stillShot_imageView.setDrawingEnable(mIsDrawingEnable)
-           stillShot_imageView.setImageBitmap(null)
+            mIsDrawingEnable = false
+            stillShot_imageView.reset()
+            stillShot_imageView.setDrawingEnable(mIsDrawingEnable)
+            stillShot_imageView.setImageBitmap(null)
 
-           resetIconVisibilties()
-           reopenCamera()
-       }
+            resetIconVisibilties()
+            reopenCamera()
+        }
     }
 
 
-    private fun resetIconVisibilties(){
+    private fun resetIconVisibilties() {
         switch_toggle_container.visibility = VISIBLE
         capture_button_container.visibility = VISIBLE
         flash_toggle_container.visibility = VISIBLE
@@ -1166,16 +1216,15 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
 
     //Draw on Image
 
-    fun toggleEnableDraw(){
-        if(colors_picker_container.visibility == VISIBLE){
+    fun toggleEnableDraw() {
+        if (colors_picker_container.visibility == VISIBLE) {
             colors_picker_container.visibility = INVISIBLE
             undo_draw_container.visibility = INVISIBLE
             mIsDrawingEnable = false
-        }
-        else if (colors_picker_container.visibility == INVISIBLE){
+        } else if (colors_picker_container.visibility == INVISIBLE) {
             colors_picker_container.visibility = VISIBLE
             undo_draw_container.visibility = VISIBLE
-            if(stillShot_imageView.getBrushColor() == 0){
+            if (stillShot_imageView.getBrushColor() == 0) {
                 stillShot_imageView.setBrushColor(Color.WHITE)
             }
             mIsDrawingEnable = true
@@ -1183,9 +1232,40 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener , View.OnTouchListe
         stillShot_imageView.setDrawingEnable(mIsDrawingEnable)
     }
 
-    private fun undoAction(){
-        if(colors_picker_container.visibility == VISIBLE){
+    private fun undoAction() {
+        if (colors_picker_container.visibility == VISIBLE) {
             stillShot_imageView.removeLastDraw()
+        }
+    }
+    //End draw region
+
+
+    //Save picture to disk region
+    fun savePictureToDisk() {
+        if (mIsImageAvailable) {
+
+            val callback = object : SaveImageCallback {
+                override fun done(e: Exception?) {
+                    if (e == null) {
+                        view?.showSnackBar("Image Saved ", 0)
+                    } else {
+                        view?.showSnackBar("Image Saved ", 0)
+                    }
+                }
+            }
+
+            if (mCapturedImage != null) {
+                try{
+                    stillShot_imageView.invalidate()
+                    stillShot_imageView.buildDrawingCache()
+                    val bitMap = Bitmap.createBitmap(stillShot_imageView.getDrawingCache())
+                    val imageSave = ImageSaver(bitMap, activity!!.getExternalFilesDir(null), callback)
+                    mBackgroundHandler?.post(imageSave)
+                }catch (e:NullPointerException){
+                    Log.d("xzy","this cause ${e.message}")
+                }
+            }
+
         }
     }
 }
