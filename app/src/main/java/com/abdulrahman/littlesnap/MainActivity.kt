@@ -3,6 +3,7 @@ package com.abdulrahman.littlesnap
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.pm.PackageManager
+import android.opengl.Visibility
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -11,6 +12,9 @@ import android.support.v4.app.DialogFragment
 import android.support.v4.view.ViewPager
 import android.util.Log
 import android.view.View
+import com.abdulrahman.littlesnap.callbacks.CameraIdCallback
+import com.abdulrahman.littlesnap.callbacks.StickerView
+import com.abdulrahman.littlesnap.fragments.stickers.StickerFragment
 import com.abdulrahman.littlesnap.utlities.PERMISSIONS
 import com.abdulrahman.littlesnap.utlities.REQUEST_CAMERA_PERMISSIONS
 import com.abdulrahman.littlesnap.utlities.showToast
@@ -19,7 +23,7 @@ import com.abdulrahman.littlesnap.viewPagerAdapter.MainViewPager
 import com.abdulrahman.littlesnap.viewPagerAdapter.SnapTabView
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity(), CameraIdCallback {
+class MainActivity : AppCompatActivity(), CameraIdCallback , StickerView {
     private lateinit var mSnapTabView: SnapTabView
     private lateinit var mViewPager:MainViewPager
     companion object {
@@ -68,6 +72,17 @@ class MainActivity : AppCompatActivity(), CameraIdCallback {
         //Disable swipeable
         mViewPager.setSwipe(false)
     }
+
+    override fun toggleViewStickersFragment() {
+//        val fragment = supportFragmentManager.findFragmentByTag("Sticker") as StickerFragment
+//        if (!fragment.isVisible){
+//            showFragmentStickers(fragment)
+//        }else{
+//            inflateFragmentStickers()
+//        }
+        inflateFragmentStickers()
+    }
+
     //End region
 
 
@@ -214,6 +229,17 @@ class MainActivity : AppCompatActivity(), CameraIdCallback {
     }
 
 
+    fun showFragmentStickers(fragment: StickerFragment){
+       val transaction = supportFragmentManager.beginTransaction()
+        transaction.show(fragment)
+    }
+
+    fun inflateFragmentStickers(){
+        val transcation = supportFragmentManager.beginTransaction()
+        transcation.add(R.id.sticker_fragment_container,StickerFragment.newInstance(),"Sticker")
+        transcation.commit()
+    }
+
     //Dialog appear when user choice don't ask me again ...
     class PermissionConfirmationDialog : DialogFragment() {
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = AlertDialog.Builder(activity)
@@ -224,4 +250,7 @@ class MainActivity : AppCompatActivity(), CameraIdCallback {
             }
             .create()
     }
+
+
+
 }

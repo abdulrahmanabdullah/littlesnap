@@ -9,16 +9,23 @@
 
 
     <View
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/main_background_view"
-            android:alpha="0.5"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/main_background_view"
+    android:alpha="0.5"
     />
+
+    <FrameLayout
+            android:visibility="visible"
+            android:id="@+id/sticker_fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+
     <com.abdulrahman.littlesnap.viewPagerAdapter.MainViewPager
             android:id="@+id/main_viewPager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
-
 
 
     <com.abdulrahman.littlesnap.viewPagerAdapter.SnapTabView

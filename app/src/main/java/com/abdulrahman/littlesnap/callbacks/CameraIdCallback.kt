@@ -1,4 +1,4 @@
-package com.abdulrahman.littlesnap
+package com.abdulrahman.littlesnap.callbacks
 
 interface CameraIdCallback {
 
@@ -21,5 +21,7 @@ interface CameraIdCallback {
 
 
     fun showTabLayoutIcons()
+
+
     fun hideTabLayoutIcons()
 }

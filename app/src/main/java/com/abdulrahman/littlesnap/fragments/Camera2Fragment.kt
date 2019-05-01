@@ -14,7 +14,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.provider.MediaStore
-import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.util.Log
@@ -27,6 +26,9 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import com.abdulrahman.littlesnap.*
+import com.abdulrahman.littlesnap.callbacks.CameraIdCallback
+import com.abdulrahman.littlesnap.callbacks.SaveImageCallback
+import com.abdulrahman.littlesnap.callbacks.StickerView
 import com.abdulrahman.littlesnap.utlities.PIC_FILE_NAME
 import com.abdulrahman.littlesnap.utlities.TAG
 import com.abdulrahman.littlesnap.utlities.showSnackBar
@@ -188,6 +190,9 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
     //Listener for which camera used front or back  init this interface in onAttach
     private lateinit var mCameraIdCallback: CameraIdCallback
 
+    //Listener for show and hide Sticker fragment init this interface int onAttach
+    private lateinit var stickerView: StickerView
+
     //Listener for SaveImageCallback interface
     //Check value of this variable onImageAvailable
     private var mIsImageAvailable = false
@@ -212,6 +217,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
             }
 
             R.id.pen_draw_imageButton -> {
+                sticker_camera2_imageview.visibility = INVISIBLE
                 toggleEnableDraw()
             }
 
@@ -221,6 +227,10 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
 
             R.id.save_picture_imageView -> {
                 savePictureToDisk()
+            }
+
+            R.id.sticker_camera2_imageview ->{
+                view?.showSnackBar("stickers clicked >> ",1)
             }
         }
     }
@@ -447,6 +457,8 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
         view.findViewById<ImageButton>(R.id.undo_draw_imageButton).setOnClickListener(this)
         view.findViewById<ImageView>(R.id.save_picture_imageView).setOnClickListener(this)
 
+        view.findViewById<ImageView>(R.id.sticker_camera2_imageview).setOnClickListener(this)
+
     }
 
     //Call this function in inOnCreateView
@@ -466,6 +478,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
     override fun onAttach(context: Context?) {
         super.onAttach(context)
         mCameraIdCallback = activity as CameraIdCallback
+        stickerView = activity as StickerView
         Log.i("xyz", "Camera fragment is attach")
     }
 
@@ -508,7 +521,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
 
     //Open and setup camera region
     private fun openCamera(width: Int, height: Int) {
-        //double check permissions
+
         if (ContextCompat.checkSelfPermission(
                 activity!!,
                 android.Manifest.permission.CAMERA
@@ -1032,6 +1045,8 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
     }
 
 
+
+    //Call this function when take picture and display it on stillShot_imageView
     private fun showStillShotContainer() {
         switch_toggle_container.visibility = INVISIBLE
         capture_button_container.visibility = INVISIBLE
@@ -1039,6 +1054,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
         //Set Still shot container visible
         stillShot_container.visibility = VISIBLE
         mCameraIdCallback.hideTabLayoutIcons()
+        stickerView.toggleViewStickersFragment()
         closeCamera()
 
     }
@@ -1185,6 +1201,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
     //Edit Image after captured region
 
     private fun hideStillShotContainer() {
+        //Hide TabLayout icons when captured .
         mCameraIdCallback.showTabLayoutIcons()
         if (mIsImageAvailable) {
             mIsImageAvailable = false
