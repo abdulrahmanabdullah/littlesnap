@@ -16,7 +16,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import kotlinx.android.synthetic.main.fragment_stickers.*
 
-class StickerFragment : BaseFragment(), StickerAdapter.RecyclerViewClickListener, View.OnClickListener {
+class StickerFragment : Fragment(), StickerAdapter.RecyclerViewClickListener, View.OnClickListener {
 
 
     companion object {
@@ -35,22 +35,27 @@ class StickerFragment : BaseFragment(), StickerAdapter.RecyclerViewClickListener
         stickers.add(d!!)
     }
 
-    override fun getLayoutResId(): Int {
-        return R.layout.fragment_stickers
-    }
-
-    private lateinit var recyclerView: RecyclerView
-    override fun inOnCreateView(view: View, container: ViewGroup?, bundle: Bundle?) {
-        getStickers()
-        recyclerView = view.findViewById<RecyclerView>(R.id.sticker_recyclerview)
-        recyclerView.layoutManager = GridLayoutManager(activity!!,NUM_COL)
-        recyclerView.adapter = StickerAdapter(stickers,this)
-    }
+//    override fun getLayoutResId(): Int {
+//        return R.layout.fragment_stickers
+//    }
+//
+//    private lateinit var recyclerView: RecyclerView
+//    override fun inOnCreateView(view: View, container: ViewGroup?, bundle: Bundle?) {
+//        getStickers()
+//        recyclerView = view.findViewById<RecyclerView>(R.id.sticker_recyclerview)
+//        recyclerView.layoutManager = GridLayoutManager(activity!!,NUM_COL)
+//        recyclerView.adapter = StickerAdapter(stickers,this)
+//    }
 
     override fun onStickerClicked(position: Int) {
 
     }
 
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+
+        return inflater.inflate(R.layout.fragment_stickers,container,false)
+    }
 
     override fun onClick(p0: View?) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.

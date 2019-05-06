@@ -3,7 +3,6 @@ package com.abdulrahman.littlesnap
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.pm.PackageManager
-import android.opengl.Visibility
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -21,17 +20,22 @@ import com.abdulrahman.littlesnap.utlities.showToast
 import com.abdulrahman.littlesnap.viewPagerAdapter.MainPagerAdapter
 import com.abdulrahman.littlesnap.viewPagerAdapter.MainViewPager
 import com.abdulrahman.littlesnap.viewPagerAdapter.SnapTabView
-import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity(), CameraIdCallback , StickerView {
+private const val TAG = "MainActivity"
+class MainActivity : AppCompatActivity(), CameraIdCallback, StickerView {
     private lateinit var mSnapTabView: SnapTabView
-    private lateinit var mViewPager:MainViewPager
+    private lateinit var mViewPager: MainViewPager
+
+
+    private lateinit var fragmentTag: String
+    private lateinit var adapter: MainPagerAdapter
+
     companion object {
         var CAMERA_POSITION_FRONT: String = ""
         var CAMERA_POSITION_BACK: String = ""
     }
 
-    //Implementation CameraIdCallback Region
+    //Implementation Listener Region
 
     var mCameraOriention = "none" //front-facing or back-facing
 
@@ -74,10 +78,13 @@ class MainActivity : AppCompatActivity(), CameraIdCallback , StickerView {
     }
 
     override fun toggleViewStickersFragment() {
-//        val fragment = supportFragmentManager.findFragmentByTag("Sticker") as StickerFragment
-//        if (!fragment.isVisible){
-//            showFragmentStickers(fragment)
-//        }else{
+//        Log.i("xyz", "fragment tag = $fragmentTag")
+//        val fragment: StickerFragment? = (supportFragmentManager.findFragmentByTag(fragmentTag)) as StickerFragment
+//        if (fragment != null) {
+//            if (fragment.isVisible) {
+//                showFragmentStickers(fragment)
+//            }
+//        } else {
 //            inflateFragmentStickers()
 //        }
         inflateFragmentStickers()
@@ -92,10 +99,11 @@ class MainActivity : AppCompatActivity(), CameraIdCallback , StickerView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         mBackgroundColor = findViewById(R.id.main_background_view)
-        val adapter = MainPagerAdapter(supportFragmentManager)
+        adapter = MainPagerAdapter(supportFragmentManager)
         //ViewPager
         mViewPager = findViewById(R.id.main_viewPager)
         mViewPager.adapter = adapter
+        fragmentTag = MainPagerAdapter.makeFragmentTag(1)
         //TabLayout
         mSnapTabView = findViewById(R.id.tablayout_main)
         mSnapTabView.setupSnapTabViewListener(mViewPager)
@@ -123,11 +131,12 @@ class MainActivity : AppCompatActivity(), CameraIdCallback , StickerView {
             }
 
             override fun onPageSelected(p0: Int) {
+
             }
 
         })
         //Open Camera2 fragment
-       mViewPager.currentItem = 1
+        mViewPager.currentItem = 1
 
     }
 
@@ -229,15 +238,17 @@ class MainActivity : AppCompatActivity(), CameraIdCallback , StickerView {
     }
 
 
-    fun showFragmentStickers(fragment: StickerFragment){
-       val transaction = supportFragmentManager.beginTransaction()
+    fun showFragmentStickers(fragment: StickerFragment) {
+        val transaction = supportFragmentManager.beginTransaction()
         transaction.show(fragment)
+        transaction.commit()
     }
 
-    fun inflateFragmentStickers(){
-        val transcation = supportFragmentManager.beginTransaction()
-        transcation.add(R.id.sticker_fragment_container,StickerFragment.newInstance(),"Sticker")
-        transcation.commit()
+    fun inflateFragmentStickers() {
+//        val fm = supportFragmentManager.beginTransaction()
+//        fm.replace(R.id.sticker_fragment_container, StickerFragment.newInstance(), fragmentTag)
+//        fm.commit()
+//        Log.i("xyz", "fragment = $fragmentTag")
     }
 
     //Dialog appear when user choice don't ask me again ...
@@ -250,7 +261,6 @@ class MainActivity : AppCompatActivity(), CameraIdCallback , StickerView {
             }
             .create()
     }
-
 
 
 }

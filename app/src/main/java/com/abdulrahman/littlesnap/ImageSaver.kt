@@ -2,11 +2,11 @@ package com.abdulrahman.littlesnap
 
 import android.media.Image
 import android.util.Log
-import com.abdulrahman.littlesnap.utlities.TAG
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
+private const val TAG = "ImageSaver"
 //class ImageSaver(private val image: Image, private val file: File) : Runnable {
 //
 //

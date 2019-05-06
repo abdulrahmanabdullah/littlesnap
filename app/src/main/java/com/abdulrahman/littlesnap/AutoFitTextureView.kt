@@ -23,15 +23,15 @@ class AutoFitTextureView @JvmOverloads constructor(context: Context, attributeSe
      * @param height Relative vertical size
      */
 
-    fun setAspectRation(width: Int, height: Int) {
+    fun setAspectRation(width: Int, height: Int,screenWidth:Int,screenHeight:Int) {
         if (width < 0 || height < 0) {
             throw IllegalArgumentException("Size cannot be negative")
         }
         ratioWidth = width
         ratioHeight = height
         requestLayout()
-//        mScreenWidth = screenWidth
-//        mScreenHeight = screenHeight
+        mScreenWidth = screenWidth
+        mScreenHeight = screenHeight
     }
 
 

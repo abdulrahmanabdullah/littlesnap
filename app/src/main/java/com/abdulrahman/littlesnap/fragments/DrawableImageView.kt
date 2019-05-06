@@ -11,8 +11,8 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageView
-import com.abdulrahman.littlesnap.utlities.TAG
 
+private const val TAG = "DrawableImageView"
 class DrawableImageView : AppCompatImageView {
 
     private var color: Int = 0

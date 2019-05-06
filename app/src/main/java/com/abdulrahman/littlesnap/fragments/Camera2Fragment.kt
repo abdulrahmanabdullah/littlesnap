@@ -29,8 +29,8 @@ import com.abdulrahman.littlesnap.*
 import com.abdulrahman.littlesnap.callbacks.CameraIdCallback
 import com.abdulrahman.littlesnap.callbacks.SaveImageCallback
 import com.abdulrahman.littlesnap.callbacks.StickerView
+import com.abdulrahman.littlesnap.fragments.stickers.StickerFragment
 import com.abdulrahman.littlesnap.utlities.PIC_FILE_NAME
-import com.abdulrahman.littlesnap.utlities.TAG
 import com.abdulrahman.littlesnap.utlities.showSnackBar
 import com.abdulrahman.littlesnap.utlities.showToast
 import com.bumptech.glide.Glide
@@ -46,12 +46,12 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
 //todo : facing camera not take picture in galaxy phones
+private const val TAG = "camera2"
+
 class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListener,
+
     VerticalSlideColorPicker.OnColorChangeListener {
 
-
-//    //This element to show SnackBar
-//    private lateinit var mView:View
 
     private var mIsDrawingEnable = false
 
@@ -78,6 +78,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
 
         //setup preview coming from camera
         override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture?, width: Int, height: Int) {
+            view?.showSnackBar("Config change ", 0)
             configTransForm(width, height)
         }
 
@@ -86,6 +87,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
         override fun onSurfaceTextureDestroyed(p0: SurfaceTexture?): Boolean = true
 
         override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, width: Int, height: Int) {
+            view?.showSnackBar("is available ", 0)
             openCamera(width, height)
         }
     }
@@ -229,12 +231,16 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
                 savePictureToDisk()
             }
 
-            R.id.sticker_camera2_imageview ->{
-                view?.showSnackBar("stickers clicked >> ",1)
+            R.id.sticker_camera2_imageview -> {
+                toggleViewStickers()
             }
         }
     }
 
+    private fun toggleViewStickers() {
+        StickerFragment.newInstance()
+        view?.showSnackBar("stickers clicked >> ", 1)
+    }
 
     override fun onTouch(p0: View?, motionEvent: MotionEvent): Boolean {
         if (mIsImageAvailable && mIsDrawingEnable) {
@@ -456,7 +462,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
         view.findViewById<VerticalSlideColorPicker>(R.id.color_picker).setOnColorChangeListener(this)
         view.findViewById<ImageButton>(R.id.undo_draw_imageButton).setOnClickListener(this)
         view.findViewById<ImageView>(R.id.save_picture_imageView).setOnClickListener(this)
-
         view.findViewById<ImageView>(R.id.sticker_camera2_imageview).setOnClickListener(this)
 
     }
@@ -582,13 +587,12 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
             //Iterate available resolution and found the largest resolution and capable of device
             for (size in map.getOutputSizes(ImageFormat.JPEG)) {
 
-                var temp = size.width.toFloat() / size.height.toFloat()
+                val temp = size.width.toFloat() / size.height.toFloat()
 
                 if (temp > (screenAspectRation - screenAspectRation * ASPECT_RATIO_ERROR_RANGE)
                     && temp < (screenAspectRation + screenAspectRation * ASPECT_RATIO_ERROR_RANGE)
                 ) {
                     sizes.add(size)
-                    Log.i(TAG, "setupCameraOutputs : found a valid size : w ${size.width}")
                     Log.i(TAG, "setupCameraOutputs : found a valid size : h ${size.height}")
                 }
 
@@ -634,14 +638,14 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
             )
 
             Log.i(TAG, " mPreviewSize w :> ${mPreviewSize.width}")
-            Log.i(TAG, " mPreviewSize w :> ${mPreviewSize.height}")
+            Log.i(TAG, " mPreviewSize h :> ${mPreviewSize.height}")
 
 
             // We fit the aspect ratio of TextureView to the size of preview we picked.
             if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                camera_textureView.setAspectRation(mPreviewSize.width, mPreviewSize.height)
+                camera_textureView.setAspectRation(mPreviewSize.width, mPreviewSize.height,SCREEN_WIDTH,SCREEN_HEIGHT)
             } else {
-                camera_textureView.setAspectRation(mPreviewSize.height, mPreviewSize.width)
+                camera_textureView.setAspectRation(mPreviewSize.height, mPreviewSize.width,SCREEN_HEIGHT,SCREEN_WIDTH)
             }
 
 
@@ -734,42 +738,45 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
         val rotation = activity!!.windowManager.defaultDisplay.rotation
         val matrix = Matrix()
         val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat())
-        val bufferRect = RectF(0f, 0f, mPreviewSize.height.toFloat(), mPreviewSize.width.toFloat())
+        val bufferRect = RectF(0f, 0f, mPreviewSize.width.toFloat(), mPreviewSize.height.toFloat())
         val centerX = viewRect.centerX()
         val centerY = viewRect.centerY()
 
         if (Surface.ROTATION_90 == rotation || Surface.ROTATION_270 == rotation) {
             bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY())
-            val scale = Math.max(
-                viewHeight.toFloat() / mPreviewSize.height,
-                viewWidth.toFloat() / mPreviewSize.width
-            )
-            with(matrix) {
-                setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL)
-                postScale(scale, scale, centerX, centerY)
+            with(matrix){
+                setRectToRect(viewRect,bufferRect,Matrix.ScaleToFit.FILL)
+                val scale = Math.max(
+                    viewHeight.toFloat() / mPreviewSize.height,
+                    viewWidth.toFloat() / mPreviewSize.width
+                )
+                postScale(scale,scale,centerX,centerY)
                 postRotate((90 * (rotation - 2)).toFloat(), centerX, centerY)
             }
+//            matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL)
+//            matrix.postScale(scale, scale, centerX, centerY)
+//            matrix.postRotate((90 * (rotation - 2)).toFloat(), centerX, centerY)
         } else if (Surface.ROTATION_180 == rotation) {
             matrix.postRotate(180f, centerX, centerY)
         }//End rotated issued
 
         // fit camera preview with almost device ratio like Samsung s8 = 17.3/9
-        var screenAspectRatio = SCREEN_WIDTH.toFloat() / SCREEN_HEIGHT.toFloat()
-        var previewAspectRatio = mPreviewSize.width.toFloat() / mPreviewSize.height.toFloat()
-        var roundScreenAspectRatio = String.format("%.2f", screenAspectRatio)
-        var roundPreviewRatio = String.format("%.2f", previewAspectRatio)
-        if (!roundPreviewRatio.equals(roundScreenAspectRatio)) {
-            var scaleFactory = (screenAspectRatio / previewAspectRatio)
+        val screenAspectRatio = SCREEN_WIDTH.toFloat() / SCREEN_HEIGHT.toFloat()
+        Log.i(TAG,"Screen width = $SCREEN_WIDTH and height = $SCREEN_HEIGHT")
+        val previewAspectRatio = mPreviewSize.width.toFloat() / mPreviewSize.height.toFloat()
+        val roundScreenAspectRatio = String.format("%.2f", screenAspectRatio)
+        val roundPreviewRatio = String.format("%.2f", previewAspectRatio)
+        if (roundPreviewRatio != roundScreenAspectRatio) {
+            Log.i(TAG,"preview aspect ratio  = $previewAspectRatio")
+            val scaleFactory = (screenAspectRatio / previewAspectRatio)
             Log.i(TAG, "scale ratio = $scaleFactory")
             matrix.postScale(scaleFactory, 1f) // Here we don't need height
-            val heightCorrection = (SCREEN_WIDTH.toFloat() * scaleFactory) - (SCREEN_HEIGHT.toFloat()) / 2
-            Log.i(TAG, " height correction = $heightCorrection")
+            val heightCorrection = ((SCREEN_HEIGHT.toFloat() * scaleFactory) - SCREEN_HEIGHT.toFloat()) / 2
+//            val widthCorrection = ((SCREEN_WIDTH.toFloat() * scaleFactory) - SCREEN_WIDTH.toFloat() ) / 2
             Log.i(TAG, " height correction negitave  = ${-heightCorrection}")
-
+//            matrix.postTranslate(-widthCorrection,0f)
             matrix.postTranslate(-heightCorrection, 0f)
         }
-
-
         camera_textureView.setTransform(matrix)
 
     }
@@ -1045,7 +1052,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
     }
 
 
-
     //Call this function when take picture and display it on stillShot_imageView
     private fun showStillShotContainer() {
         switch_toggle_container.visibility = INVISIBLE
@@ -1054,7 +1060,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
         //Set Still shot container visible
         stillShot_container.visibility = VISIBLE
         mCameraIdCallback.hideTabLayoutIcons()
-        stickerView.toggleViewStickersFragment()
+//        stickerView.toggleViewStickersFragment()
         closeCamera()
 
     }
@@ -1183,10 +1189,10 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
                 } catch (e: IOException) {
                     callback?.done(e)
                 } finally {
-                    if(null != output){
-                        try{
+                    if (null != output) {
+                        try {
                             output.close()
-                        }catch (e:Exception){
+                        } catch (e: Exception) {
                             e.printStackTrace()
                         }
                     }
@@ -1272,14 +1278,14 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
             }
 
             if (mCapturedImage != null) {
-                try{
+                try {
                     stillShot_imageView.invalidate()
                     stillShot_imageView.buildDrawingCache()
                     val bitMap = Bitmap.createBitmap(stillShot_imageView.getDrawingCache())
                     val imageSave = ImageSaver(bitMap, activity!!.getExternalFilesDir(null), callback)
                     mBackgroundHandler?.post(imageSave)
-                }catch (e:NullPointerException){
-                    Log.d("xzy","this cause ${e.message}")
+                } catch (e: NullPointerException) {
+                    Log.d("xzy", "this cause ${e.message}")
                 }
             }
 
