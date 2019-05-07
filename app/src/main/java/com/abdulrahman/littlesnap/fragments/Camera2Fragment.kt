@@ -75,10 +75,9 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
     //Preparing Texture view
     //Create surface listener of texture from layout and set preview
     private val mTextViewSurface = object : TextureView.SurfaceTextureListener {
-
         //setup preview coming from camera
         override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture?, width: Int, height: Int) {
-            view?.showSnackBar("Config change ", 0)
+//            view?.showSnackBar("Config change ", 0)
             configTransForm(width, height)
         }
 
@@ -87,7 +86,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
         override fun onSurfaceTextureDestroyed(p0: SurfaceTexture?): Boolean = true
 
         override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, width: Int, height: Int) {
-            view?.showSnackBar("is available ", 0)
+//            view?.showSnackBar("is available ", 0)
             openCamera(width, height)
         }
     }
@@ -123,7 +122,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
             when (mState) {
                 STATE_PREVIEW -> Unit // Do nothing when the camera preview is working normally.
                 STATE_WAITING_LOCK -> {
-
                     capturePicture(result)
                 }
                 STATE_WAITING_PRECAPTURE -> {
@@ -441,6 +439,8 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
 
     //To get camera Id
     private lateinit var mCameraId: String
+    //Check if facing camera has auto focus .
+    private var autoFocusSupport = false
 
     //Implementation Region
     override fun getLayoutResId(): Int {
@@ -569,19 +569,21 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
 
         val manager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager
 
+
+
         try {
             if (!mCameraIdCallback.isCameraBackFacing() && !mCameraIdCallback.isCameraFrontFacing()) {
                 findCameraId()
             }
             //Here Camera id become from findCameraId
             val characteristics = manager.getCameraCharacteristics(mCameraId)
-
             //get available resolution
             val map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
 
             //Now set best resolution
-            var largest: Size =
-                Collections.max(Arrays.asList(*map.getOutputSizes(ImageFormat.JPEG)), CompareSizeByArea())
+//            var largest: Size =
+//                Collections.max(Arrays.asList(*map.getOutputSizes(ImageFormat.JPEG)), CompareSizeByArea())
+            var largest:Size? = null
             val screenAspectRation = SCREEN_WIDTH.toFloat() / SCREEN_HEIGHT.toFloat()
             val sizes = mutableListOf<Size>()
             //Iterate available resolution and found the largest resolution and capable of device
@@ -598,7 +600,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
 
             }
 
-            //After found best resolution add in largest
+            //After found best resolution redefined  largest
             if (sizes.size > 0) {
                 largest = Collections.max(sizes, CompareSizeByArea())
                 Log.i(TAG, "largest width = ${largest.width}")
@@ -618,14 +620,23 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
             val rotatedPreviewHeight = if (swappedDimenions) width else height
             var maxPreviewWidth = if (swappedDimenions) displaySize.y else displaySize.x
             var maxPreviewHeight = if (swappedDimenions) displaySize.x else displaySize.y
-
+//            var rotatedPreviewWidth = width
+//            var rotatedPreviewHeight = height
+//            var maxPreviewWidth = displaySize.x
+//            var maxPreviewHeight = displaySize.y
+//            if (swappedDimenions) {
+//                rotatedPreviewHeight = width
+//                rotatedPreviewWidth = height
+//                maxPreviewWidth = displaySize.y
+//                maxPreviewHeight = displaySize.x
+//            }
 
             if (maxPreviewWidth > MAX_PREVIEW_WIDTH) maxPreviewWidth = MAX_PREVIEW_WIDTH
             if (maxPreviewHeight > MAX_PREVIEW_HEIGHT) maxPreviewHeight = MAX_PREVIEW_HEIGHT
 
             //Init mCapturedImage
             mImageReader = ImageReader.newInstance(
-                largest.width,
+                largest!!.width,
                 largest.height, ImageFormat.JPEG, 2
             )
             mImageReader?.setOnImageAvailableListener(onImageAvailableListener, mBackgroundHandler)
@@ -643,9 +654,9 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
 
             // We fit the aspect ratio of TextureView to the size of preview we picked.
             if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                camera_textureView.setAspectRation(mPreviewSize.width, mPreviewSize.height,SCREEN_WIDTH,SCREEN_HEIGHT)
+                camera_textureView.setAspectRation(mPreviewSize.width, mPreviewSize.height, SCREEN_WIDTH, SCREEN_HEIGHT)
             } else {
-                camera_textureView.setAspectRation(mPreviewSize.height, mPreviewSize.width,SCREEN_HEIGHT,SCREEN_WIDTH)
+                camera_textureView.setAspectRation(mPreviewSize.height, mPreviewSize.width, SCREEN_HEIGHT, SCREEN_WIDTH)
             }
 
 
@@ -692,22 +703,29 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
     //To select which camera use front or back
     private fun findCameraId() {
         val manager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+
         try {
             for (cameraId in manager.cameraIdList) {
                 val characteristics = manager.getCameraCharacteristics(cameraId)
                 val facing = characteristics.get(CameraCharacteristics.LENS_FACING)
                 if (facing == CameraCharacteristics.LENS_FACING_FRONT) {
+                    //Check if front camera has auto focus
+                    //This line solve take picture by facing camera on samsung device.
+                    val afAvailableMod = characteristics.get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES)
+                    autoFocusSupport =
+                        !(afAvailableMod.isEmpty() ||
+                                (afAvailableMod.size == 1 && afAvailableMod[0] == CameraMetadata.CONTROL_AF_MODE_OFF))
                     mCameraIdCallback.setFrontCameraId(cameraId)
                 } else if (facing == CameraCharacteristics.LENS_FACING_BACK) {
                     mCameraIdCallback.setBackCameraId(cameraId)
                 }
             }
             //Set front facing when app start
-//            mCameraIdCallback.setCameraFrontFacing()
-//            mCameraId = mCameraIdCallback.getFrontCameraId()
+            mCameraIdCallback.setCameraFrontFacing()
+            mCameraId = mCameraIdCallback.getFrontCameraId()
             //Move to Back lens when app start ..
-            mCameraIdCallback.setCameraBackFacing()
-            mCameraId = mCameraIdCallback.getBackCameraId()
+//            mCameraIdCallback.setCameraBackFacing()
+//            mCameraId = mCameraIdCallback.getBackCameraId()
 
         } catch (e: CameraAccessException) {
             Log.d(TAG, " findCamera throw exception ${e.message}")
@@ -744,13 +762,13 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
 
         if (Surface.ROTATION_90 == rotation || Surface.ROTATION_270 == rotation) {
             bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY())
-            with(matrix){
-                setRectToRect(viewRect,bufferRect,Matrix.ScaleToFit.FILL)
+            with(matrix) {
+                setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL)
                 val scale = Math.max(
                     viewHeight.toFloat() / mPreviewSize.height,
                     viewWidth.toFloat() / mPreviewSize.width
                 )
-                postScale(scale,scale,centerX,centerY)
+                postScale(scale, scale, centerX, centerY)
                 postRotate((90 * (rotation - 2)).toFloat(), centerX, centerY)
             }
 //            matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL)
@@ -762,19 +780,18 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
 
         // fit camera preview with almost device ratio like Samsung s8 = 17.3/9
         val screenAspectRatio = SCREEN_WIDTH.toFloat() / SCREEN_HEIGHT.toFloat()
-        Log.i(TAG,"Screen width = $SCREEN_WIDTH and height = $SCREEN_HEIGHT")
+        Log.i(TAG, "Screen width = $SCREEN_WIDTH and height = $SCREEN_HEIGHT")
         val previewAspectRatio = mPreviewSize.width.toFloat() / mPreviewSize.height.toFloat()
         val roundScreenAspectRatio = String.format("%.2f", screenAspectRatio)
         val roundPreviewRatio = String.format("%.2f", previewAspectRatio)
         if (roundPreviewRatio != roundScreenAspectRatio) {
-            Log.i(TAG,"preview aspect ratio  = $previewAspectRatio")
+            Log.i(TAG, "preview aspect ratio  = $previewAspectRatio")
             val scaleFactory = (screenAspectRatio / previewAspectRatio)
+//            val scaleFactory = ( previewAspectRatio / screenAspectRatio) //This line solve ratio for nexus 5 .
             Log.i(TAG, "scale ratio = $scaleFactory")
             matrix.postScale(scaleFactory, 1f) // Here we don't need height
             val heightCorrection = ((SCREEN_HEIGHT.toFloat() * scaleFactory) - SCREEN_HEIGHT.toFloat()) / 2
-//            val widthCorrection = ((SCREEN_WIDTH.toFloat() * scaleFactory) - SCREEN_WIDTH.toFloat() ) / 2
             Log.i(TAG, " height correction negitave  = ${-heightCorrection}")
-//            matrix.postTranslate(-widthCorrection,0f)
             matrix.postTranslate(-heightCorrection, 0f)
         }
         camera_textureView.setTransform(matrix)
@@ -796,7 +813,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
             }
 
             if (null != mImageReader) {
-                mImageReader!!.close()
+                mImageReader?.close()
                 mImageReader = null
             }
         } catch (e: InterruptedException) {
@@ -875,7 +892,12 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
 
     //Take Camera Picture region
     private fun takePicture() {
-        lockFocus()
+        //Check if facing cam has auto focus or not .
+        if (autoFocusSupport){
+            lockFocus()
+        }else{
+            captureStillPicture()
+        }
     }
 
     /**
@@ -884,7 +906,8 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
     private fun lockFocus() {
         try {
             //This is to tell the camera to lock focus
-            mCaptureRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START)
+            mCaptureRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
+                CameraMetadata.CONTROL_AF_TRIGGER_START)
             //Tell mCaptureCallback to wait for the lock
             mState = STATE_WAITING_LOCK
             mCaptureSession?.capture(
@@ -892,9 +915,10 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
                 mCaptureCallback, mBackgroundHandler
             )
 
+//            captureStillPicture()
         } catch (e: CameraAccessException) {
 
-            Log.i(TAG, "lockFocus throw exception ${e.message}")
+            Log.i("bug1", "lockFocus throw exception ${e.message}")
         }
 
     }
@@ -1005,14 +1029,14 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
             val file = File(context?.getExternalFilesDir(null), PIC_FILE_NAME)
             val tempImageUri: Uri = Uri.fromFile(file)
             Log.d(TAG, "Check file path ${tempImageUri.path}")
-            var bitMap: Bitmap? = null
+//            var bitMap: Bitmap? = null
             try {
                 val exif = ExifInterface(tempImageUri.path)
-                bitMap = MediaStore.Images.Media.getBitmap(context!!.contentResolver, tempImageUri)
+                val bitMap = MediaStore.Images.Media.getBitmap(context!!.contentResolver, tempImageUri)
                 val orientation =
                     exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED)
                 //Init Bitmap
-                mCapturedBitmap = rotateBitmap(orientation, bitMap)!!
+                mCapturedBitmap = rotateBitmap(orientation, bitMap)
 
             } catch (e: IOException) {
                 Log.d(TAG, "doInBackground ${e.message}")
@@ -1073,7 +1097,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
                 matrix.setRotate(90f)
                 matrix.postScale(-1f, 1f)
             }
-
             ExifInterface.ORIENTATION_NORMAL -> {
                 return bitmap
             }
@@ -1092,7 +1115,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
             }
 
             ExifInterface.ORIENTATION_ROTATE_90 -> {
-                matrix.setRotate(90f)
+                matrix.setRotate(-90f)
             }
 
             ExifInterface.ORIENTATION_TRANSVERSE -> {
@@ -1109,7 +1132,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
         return try {
             //solve mirror picture
             if (mCameraIdCallback.isCameraFrontFacing()) {
-                matrix.setScale(-1f, 1f)
+                matrix.postScale(-1f, 1f)
             }
 
             val bitmapRotater = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
