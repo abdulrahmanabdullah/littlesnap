@@ -45,7 +45,7 @@ import java.util.*
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
-//todo : facing camera not take picture in galaxy phones
+//todo : facing camera not take picture in galaxy phones .. fixed
 private const val TAG = "camera2"
 
 class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListener,
@@ -276,7 +276,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
      * This function for  ImageSaver class and create image bitmap
      * And call asyc task to save image
      */
-    //Todo : remove this function and replace it with savePictureToDisk
     private fun saveTempImageToStorage() {
         //Check Save image Callback interface ...
         val callBack = object : SaveImageCallback {
@@ -288,8 +287,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
                     mIsImageAvailable = true
                     mCapturedImage?.close()
                 } else {
-                    //Todo call SnackBar here
-                    activity!!.showToast(" Some error occured ${e.message}")
+                    view?.showSnackBar("Some error occurred ${e.message}" , 0)
                 }
             }
 
@@ -1019,7 +1017,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
             }
         }
     }
-
     //Background task region
     //todo : convert this part to Rx
     private inner class BackgroundImagerTask(context: Context?) : AsyncTask<Void, Int, Int>() {
@@ -1076,18 +1073,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
     }
 
 
-    //Call this function when take picture and display it on stillShot_imageView
-    private fun showStillShotContainer() {
-        switch_toggle_container.visibility = INVISIBLE
-        capture_button_container.visibility = INVISIBLE
-        flash_toggle_container.visibility = INVISIBLE
-        //Set Still shot container visible
-        stillShot_container.visibility = VISIBLE
-        mCameraIdCallback.hideTabLayoutIcons()
-//        stickerView.toggleViewStickersFragment()
-        closeCamera()
-
-    }
 
     //Call this function in background task - doInBackground to check image rotation
     private fun rotateBitmap(orientation: Int, bitmap: Bitmap): Bitmap? {
@@ -1115,7 +1100,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
             }
 
             ExifInterface.ORIENTATION_ROTATE_90 -> {
-                matrix.setRotate(-90f)
+                matrix.setRotate(90f)
             }
 
             ExifInterface.ORIENTATION_TRANSVERSE -> {
@@ -1132,6 +1117,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
         return try {
             //solve mirror picture
             if (mCameraIdCallback.isCameraFrontFacing()) {
+                matrix.setRotate(-90f) // fix facing rotate capture .
                 matrix.postScale(-1f, 1f)
             }
 
@@ -1144,91 +1130,18 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
 
     }
 
-    //Class for save image
-    class ImageSaver : Runnable {
-
-        var image: Image? = null
-        var file: File
-        var callback: SaveImageCallback? = null
-        var bitmap: Bitmap? = null
-
-        constructor(image: Image?, file: File, callback: SaveImageCallback?) {
-            this.image = image
-            this.file = file
-            this.callback = callback
-        }
-
-        constructor(bitmap: Bitmap, file: File, callback: SaveImageCallback?) {
-            this.bitmap = bitmap
-            this.file = file
-            this.callback = callback
-        }
-
-
-        override fun run() {
-            if (image != null) {
-                val buffer = image!!.planes[0].buffer
-                val bytes = ByteArray(buffer.remaining())
-                buffer.get(bytes)
-                var outputStream: FileOutputStream? = null
-                try {
-                    val f = File(file, PIC_FILE_NAME)
-                    outputStream = FileOutputStream(f).apply {
-                        write(bytes)
-                    }
-
-                } catch (e: IOException) {
-                    Log.d(TAG, " ImageSaver throw exception ${e.message}")
-                    callback!!.done(e)
-                } finally {
-                    image?.close()
-                    outputStream?.let {
-                        try {
-                            it.close()
-                        } catch (e: IOException) {
-                            Log.d(TAG, "finally  ImageSaver throw exception ${e.message}")
-                        }
-                    }
-
-                    callback!!.done(null)
-                }
-
-            }
-            //Save image to disk after draw
-            else if (bitmap != null) {
-                var stream: ByteArrayOutputStream? = null
-                var imageByteArray: ByteArray? = null
-                stream = ByteArrayOutputStream()
-                bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-                imageByteArray = stream.toByteArray()
-                val dateFormate = SimpleDateFormat("ddMMyyyyhhmmss")
-                val formate = dateFormate.format(Date())
-                val f = File(file, "_image$formate.jpg")
-                //Save mirrored array
-                var output: FileOutputStream? = null
-                try {
-                    output = FileOutputStream(f)
-                    output.write(imageByteArray)
-                } catch (e: IOException) {
-                    callback?.done(e)
-                } finally {
-                    if (null != output) {
-                        try {
-                            output.close()
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    }
-                    callback?.done(null)
-                }
-            }
-        }
-
+    //Call this function when take picture and display it on stillShot_imageView
+    private fun showStillShotContainer() {
+        switch_toggle_container.visibility = INVISIBLE
+        capture_button_container.visibility = INVISIBLE
+        flash_toggle_container.visibility = INVISIBLE
+        //Set Still shot container visible
+        stillShot_container.visibility = VISIBLE
+        mCameraIdCallback.hideTabLayoutIcons()
+//        stickerView.toggleViewStickersFragment()
+        closeCamera()
     }
-
-
     //Edit Image after captured region
-
     private fun hideStillShotContainer() {
         //Hide TabLayout icons when captured .
         mCameraIdCallback.showTabLayoutIcons()
@@ -1240,7 +1153,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
             stillShot_imageView.reset()
             stillShot_imageView.setDrawingEnable(mIsDrawingEnable)
             stillShot_imageView.setImageBitmap(null)
-
             resetIconVisibilties()
             reopenCamera()
         }
@@ -1251,17 +1163,15 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
         switch_toggle_container.visibility = VISIBLE
         capture_button_container.visibility = VISIBLE
         flash_toggle_container.visibility = VISIBLE
-        //Still shot container visible contain pen_draw_imageButton and close_image
+        //Still shot container visible contain pen_draw_imageButton and close_image and stickers icon
         stillShot_container.visibility = INVISIBLE
         colors_picker_container.visibility = INVISIBLE
         undo_draw_container.visibility = INVISIBLE
     }
-
     //End edit image region
 
 
     //Draw on Image
-
     fun toggleEnableDraw() {
         if (colors_picker_container.visibility == VISIBLE) {
             colors_picker_container.visibility = INVISIBLE
@@ -1289,7 +1199,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
     //Save picture to disk region
     fun savePictureToDisk() {
         if (mIsImageAvailable) {
-
             val callback = object : SaveImageCallback {
                 override fun done(e: Exception?) {
                     if (e == null) {
@@ -1311,7 +1220,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
                     Log.d("xzy", "this cause ${e.message}")
                 }
             }
-
         }
     }
 }
