@@ -70,7 +70,7 @@ class MainPagerAdapter constructor(fm:FragmentManager): FragmentStatePagerAdapte
 
     companion object{
         fun makeFragmentTag(viewId:Int):String{
-            return "android:switcher$viewId"
+            return "android:switcher$viewId:"
         }
     }
 }

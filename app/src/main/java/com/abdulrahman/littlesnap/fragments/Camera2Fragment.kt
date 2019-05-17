@@ -40,7 +40,6 @@ import kotlinx.android.synthetic.main.fragment_camera2.*
 import java.io.*
 import java.lang.Exception
 import java.lang.NullPointerException
-import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
@@ -191,7 +190,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
     private lateinit var mCameraIdCallback: CameraIdCallback
 
     //Listener for show and hide Sticker fragment init this interface int onAttach
-    private lateinit var stickerView: StickerView
+    private lateinit var stickerViewListener: StickerView
 
     //Listener for SaveImageCallback interface
     //Check value of this variable onImageAvailable
@@ -217,7 +216,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
             }
 
             R.id.pen_draw_imageButton -> {
-                sticker_camera2_imageview.visibility = INVISIBLE
                 toggleEnableDraw()
             }
 
@@ -229,16 +227,46 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
                 savePictureToDisk()
             }
 
-            R.id.sticker_camera2_imageview -> {
-                toggleViewStickers()
+            R.id.sticker_camera2_imageView -> {
+                if(!isStickerClicked){
+                    showStickers()
+                }else{
+                    hideStickers()
+                }
             }
         }
     }
-
-    private fun toggleViewStickers() {
-        StickerFragment.newInstance()
-        view?.showSnackBar("stickers clicked >> ", 1)
+private var isStickerClicked = false
+    private fun showStickers() {
+        sticker_camera2_imageView.setImageResource(R.drawable.x_white_icon)
+        val transaction = childFragmentManager.beginTransaction()
+        transaction.setCustomAnimations(
+            R.anim.slide_in_up,
+            R.anim.slide_in_down,
+            R.anim.slide_out_down,
+            R.anim.slide_out_up
+        )
+        transaction.add(R.id.container_sticker_fragment, StickerFragment.newInstance(), "tag")
+        transaction.commit()
+        isStickerClicked = true
+        view?.showSnackBar("stickers clicked >> ", 0)
     }
+
+    private fun hideStickers(){
+        isStickerClicked = false
+        sticker_camera2_imageView.setImageResource(R.drawable.ic_sticker_small)
+        val transaction = childFragmentManager.beginTransaction()
+        val fragment = childFragmentManager.findFragmentByTag("tag")
+        transaction.setCustomAnimations(
+            R.anim.slide_in_up,
+            R.anim.slide_in_down,
+            R.anim.slide_out_down,
+            R.anim.slide_out_up
+        )
+        transaction.hide(fragment!!).commit()
+        view?.showSnackBar("stickers clicked  again >> ", 0)
+    }
+
 
     override fun onTouch(p0: View?, motionEvent: MotionEvent): Boolean {
         if (mIsImageAvailable && mIsDrawingEnable) {
@@ -287,7 +315,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
                     mIsImageAvailable = true
                     mCapturedImage?.close()
                 } else {
-                    view?.showSnackBar("Some error occurred ${e.message}" , 0)
+                    view?.showSnackBar("Some error occurred ${e.message}", 0)
                 }
             }
 
@@ -446,12 +474,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
     }
 
     override fun inOnCreateView(view: View, container: ViewGroup?, bundle: Bundle?) {
-        //Relative layout
-//         view.findViewById<RelativeLayout>(R.id.switch_toggle_container)
-//        view.findViewById<RelativeLayout>(R.id.flash_toggle_container)
-//        view.findViewById<RelativeLayout>(R.id.capture_button_container)
-//        mTextureView = view.findViewById(R.id.camera_textureView)
-//        view.findViewById<RelativeLayout>(R.id.stillShot_container)
         view.findViewById<ImageView>(R.id.stillShot_imageButton).setOnClickListener(this)
         view.findViewById<ImageButton>(R.id.switchCamOrient).setOnClickListener(this)
         view.findViewById<ImageView>(R.id.close_image_imageView).setOnClickListener(this)
@@ -460,7 +482,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
         view.findViewById<VerticalSlideColorPicker>(R.id.color_picker).setOnColorChangeListener(this)
         view.findViewById<ImageButton>(R.id.undo_draw_imageButton).setOnClickListener(this)
         view.findViewById<ImageView>(R.id.save_picture_imageView).setOnClickListener(this)
-        view.findViewById<ImageView>(R.id.sticker_camera2_imageview).setOnClickListener(this)
+        view.findViewById<ImageView>(R.id.sticker_camera2_imageView).setOnClickListener(this)
 
     }
 
@@ -481,8 +503,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
     override fun onAttach(context: Context?) {
         super.onAttach(context)
         mCameraIdCallback = activity as CameraIdCallback
-        stickerView = activity as StickerView
-        Log.i("xyz", "Camera fragment is attach")
+        stickerViewListener = activity as StickerView
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -581,7 +602,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
             //Now set best resolution
 //            var largest: Size =
 //                Collections.max(Arrays.asList(*map.getOutputSizes(ImageFormat.JPEG)), CompareSizeByArea())
-            var largest:Size? = null
+            var largest: Size? = null
             val screenAspectRation = SCREEN_WIDTH.toFloat() / SCREEN_HEIGHT.toFloat()
             val sizes = mutableListOf<Size>()
             //Iterate available resolution and found the largest resolution and capable of device
@@ -891,9 +912,9 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
     //Take Camera Picture region
     private fun takePicture() {
         //Check if facing cam has auto focus or not .
-        if (autoFocusSupport){
+        if (autoFocusSupport) {
             lockFocus()
-        }else{
+        } else {
             captureStillPicture()
         }
     }
@@ -904,8 +925,10 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
     private fun lockFocus() {
         try {
             //This is to tell the camera to lock focus
-            mCaptureRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
-                CameraMetadata.CONTROL_AF_TRIGGER_START)
+            mCaptureRequestBuilder.set(
+                CaptureRequest.CONTROL_AF_TRIGGER,
+                CameraMetadata.CONTROL_AF_TRIGGER_START
+            )
             //Tell mCaptureCallback to wait for the lock
             mState = STATE_WAITING_LOCK
             mCaptureSession?.capture(
@@ -1017,6 +1040,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
             }
         }
     }
+
     //Background task region
     //todo : convert this part to Rx
     private inner class BackgroundImagerTask(context: Context?) : AsyncTask<Void, Int, Int>() {
@@ -1026,6 +1050,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
             val file = File(context?.getExternalFilesDir(null), PIC_FILE_NAME)
             val tempImageUri: Uri = Uri.fromFile(file)
             Log.d(TAG, "Check file path ${tempImageUri.path}")
+
 //            var bitMap: Bitmap? = null
             try {
                 val exif = ExifInterface(tempImageUri.path)
@@ -1071,7 +1096,6 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
             }
         }
     }
-
 
 
     //Call this function in background task - doInBackground to check image rotation
@@ -1138,9 +1162,9 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
         //Set Still shot container visible
         stillShot_container.visibility = VISIBLE
         mCameraIdCallback.hideTabLayoutIcons()
-//        stickerView.toggleViewStickersFragment()
         closeCamera()
     }
+
     //Edit Image after captured region
     private fun hideStillShotContainer() {
         //Hide TabLayout icons when captured .
@@ -1148,8 +1172,8 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
         if (mIsImageAvailable) {
             mIsImageAvailable = false
             mCapturedBitmap = null
-
             mIsDrawingEnable = false
+            hideStickers()
             stillShot_imageView.reset()
             stillShot_imageView.setDrawingEnable(mIsDrawingEnable)
             stillShot_imageView.setImageBitmap(null)
@@ -1176,14 +1200,20 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
         if (colors_picker_container.visibility == VISIBLE) {
             colors_picker_container.visibility = INVISIBLE
             undo_draw_container.visibility = INVISIBLE
+            stickers_container.visibility = VISIBLE
             mIsDrawingEnable = false
         } else if (colors_picker_container.visibility == INVISIBLE) {
             colors_picker_container.visibility = VISIBLE
             undo_draw_container.visibility = VISIBLE
+            stickers_container.visibility = INVISIBLE
             if (stillShot_imageView.getBrushColor() == 0) {
                 stillShot_imageView.setBrushColor(Color.WHITE)
             }
             mIsDrawingEnable = true
+
+        }
+        if (isStickerClicked){
+            hideStickers()
         }
         stillShot_imageView.setDrawingEnable(mIsDrawingEnable)
     }

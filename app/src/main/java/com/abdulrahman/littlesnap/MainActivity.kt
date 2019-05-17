@@ -12,7 +12,6 @@ import android.support.v4.view.ViewPager
 import android.util.Log
 import android.view.View
 import com.abdulrahman.littlesnap.callbacks.CameraIdCallback
-import com.abdulrahman.littlesnap.callbacks.StickerView
 import com.abdulrahman.littlesnap.fragments.stickers.StickerFragment
 import com.abdulrahman.littlesnap.utlities.PERMISSIONS
 import com.abdulrahman.littlesnap.utlities.REQUEST_CAMERA_PERMISSIONS
@@ -20,9 +19,11 @@ import com.abdulrahman.littlesnap.utlities.showToast
 import com.abdulrahman.littlesnap.viewPagerAdapter.MainPagerAdapter
 import com.abdulrahman.littlesnap.viewPagerAdapter.MainViewPager
 import com.abdulrahman.littlesnap.viewPagerAdapter.SnapTabView
+import kotlinx.android.synthetic.main.activity_main.*
 
 private const val TAG = "MainActivity"
-class MainActivity : AppCompatActivity(), CameraIdCallback, StickerView {
+
+class MainActivity : AppCompatActivity(), CameraIdCallback{
     private lateinit var mSnapTabView: SnapTabView
     private lateinit var mViewPager: MainViewPager
 
@@ -77,21 +78,7 @@ class MainActivity : AppCompatActivity(), CameraIdCallback, StickerView {
         mViewPager.setSwipe(false)
     }
 
-    override fun toggleViewStickersFragment() {
-//        Log.i("xyz", "fragment tag = $fragmentTag")
-//        val fragment: StickerFragment? = (supportFragmentManager.findFragmentByTag(fragmentTag)) as StickerFragment
-//        if (fragment != null) {
-//            if (fragment.isVisible) {
-//                showFragmentStickers(fragment)
-//            }
-//        } else {
-//            inflateFragmentStickers()
-//        }
-        inflateFragmentStickers()
-    }
-
     //End region
-
 
     lateinit var mBackgroundColor: View
 
@@ -135,9 +122,10 @@ class MainActivity : AppCompatActivity(), CameraIdCallback, StickerView {
             }
 
         })
-        //Open Camera2 fragment
+//        //Open Camera2 fragment
         mViewPager.currentItem = 1
 
+//testStickers()
     }
 
 
@@ -238,18 +226,7 @@ class MainActivity : AppCompatActivity(), CameraIdCallback, StickerView {
     }
 
 
-    fun showFragmentStickers(fragment: StickerFragment) {
-        val transaction = supportFragmentManager.beginTransaction()
-        transaction.show(fragment)
-        transaction.commit()
-    }
 
-    fun inflateFragmentStickers() {
-//        val fm = supportFragmentManager.beginTransaction()
-//        fm.replace(R.id.sticker_fragment_container, StickerFragment.newInstance(), fragmentTag)
-//        fm.commit()
-//        Log.i("xyz", "fragment = $fragmentTag")
-    }
 
     //Dialog appear when user choice don't ask me again ...
     class PermissionConfirmationDialog : DialogFragment() {
@@ -261,6 +238,4 @@ class MainActivity : AppCompatActivity(), CameraIdCallback, StickerView {
             }
             .create()
     }
-
-
 }
