@@ -87,8 +87,6 @@
                 tools:src="@drawable/img_amusing"
                 android:id="@+id/stillShot_imageView"
         />
-
-
         <!-- To close image-->
         <RelativeLayout
                 android:layout_alignParentStart="true"

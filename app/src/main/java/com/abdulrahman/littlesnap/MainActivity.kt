@@ -11,7 +11,10 @@ import android.support.v4.app.DialogFragment
 import android.support.v4.view.ViewPager
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import com.abdulrahman.littlesnap.callbacks.CameraIdCallback
+import com.abdulrahman.littlesnap.callbacks.StickerViewListener
+import com.abdulrahman.littlesnap.fragments.Camera2Fragment
 import com.abdulrahman.littlesnap.fragments.stickers.StickerFragment
 import com.abdulrahman.littlesnap.utlities.PERMISSIONS
 import com.abdulrahman.littlesnap.utlities.REQUEST_CAMERA_PERMISSIONS
@@ -23,7 +26,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 private const val TAG = "MainActivity"
 
-class MainActivity : AppCompatActivity(), CameraIdCallback{
+class MainActivity : AppCompatActivity(), CameraIdCallback, StickerViewListener {
     private lateinit var mSnapTabView: SnapTabView
     private lateinit var mViewPager: MainViewPager
 
@@ -78,9 +81,30 @@ class MainActivity : AppCompatActivity(), CameraIdCallback{
         mViewPager.setSwipe(false)
     }
 
+    private lateinit var stickerId: String
+    override fun sendStickerId(stickerId: String) {
+        this.stickerId = stickerId
+        val fragment: Camera2Fragment? = supportFragmentManager.findFragmentByTag(fragmentTag) as Camera2Fragment
+        if (fragment != null) {
+            if (fragment.isVisible) {
+                //Send sticker id to camera2 fragment .
+                fragment.addSticker(stickerId)
+                //After choice sticker hide child fragment .
+                fragment.hideStickers()
+            }
+        }
+    }
+
+    override fun getStickerId(): String {
+        Log.i(TAG, "Got this sticker $stickerId")
+        return this.stickerId
+    }
+
+
     //End region
 
     lateinit var mBackgroundColor: View
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,8 +113,8 @@ class MainActivity : AppCompatActivity(), CameraIdCallback{
         adapter = MainPagerAdapter(supportFragmentManager)
         //ViewPager
         mViewPager = findViewById(R.id.main_viewPager)
+        Log.i(TAG, "view pager id = ${main_viewPager.id}")
         mViewPager.adapter = adapter
-        fragmentTag = MainPagerAdapter.makeFragmentTag(1)
         //TabLayout
         mSnapTabView = findViewById(R.id.tablayout_main)
         mSnapTabView.setupSnapTabViewListener(mViewPager)
@@ -118,14 +142,13 @@ class MainActivity : AppCompatActivity(), CameraIdCallback{
             }
 
             override fun onPageSelected(p0: Int) {
-
+                fragmentTag = MainPagerAdapter.makeFragmentTag(main_viewPager.id, p0)
             }
 
         })
-//        //Open Camera2 fragment
+        //Open Camera2 fragment
         mViewPager.currentItem = 1
 
-//testStickers()
     }
 
 
@@ -224,8 +247,6 @@ class MainActivity : AppCompatActivity(), CameraIdCallback{
         super.onStart()
         init()//To check permissions every startup
     }
-
-
 
 
     //Dialog appear when user choice don't ask me again ...

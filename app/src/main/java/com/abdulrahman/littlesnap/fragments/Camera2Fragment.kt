@@ -28,14 +28,19 @@ import android.widget.RelativeLayout
 import com.abdulrahman.littlesnap.*
 import com.abdulrahman.littlesnap.callbacks.CameraIdCallback
 import com.abdulrahman.littlesnap.callbacks.SaveImageCallback
-import com.abdulrahman.littlesnap.callbacks.StickerView
+import com.abdulrahman.littlesnap.callbacks.StickerViewListener
 import com.abdulrahman.littlesnap.fragments.stickers.StickerFragment
+import com.abdulrahman.littlesnap.model.Stickers
 import com.abdulrahman.littlesnap.utlities.PIC_FILE_NAME
 import com.abdulrahman.littlesnap.utlities.showSnackBar
 import com.abdulrahman.littlesnap.utlities.showToast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.fragment_camera2.*
 import java.io.*
 import java.lang.Exception
@@ -190,7 +195,7 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
     private lateinit var mCameraIdCallback: CameraIdCallback
 
     //Listener for show and hide Sticker fragment init this interface int onAttach
-    private lateinit var stickerViewListener: StickerView
+    private lateinit var stickerViewListener: StickerViewListener
 
     //Listener for SaveImageCallback interface
     //Check value of this variable onImageAvailable
@@ -228,15 +233,16 @@ class Camera2Fragment : BaseFragment(), View.OnClickListener, View.OnTouchListen
             }
 
             R.id.sticker_camera2_imageView -> {
-                if(!isStickerClicked){
+                if (!isStickerClicked) {
                     showStickers()
-                }else{
+                } else {
                     hideStickers()
                 }
             }
         }
     }
-private var isStickerClicked = false
+
+    private var isStickerClicked = false
     private fun showStickers() {
         sticker_camera2_imageView.setImageResource(R.drawable.x_white_icon)
         val transaction = childFragmentManager.beginTransaction()
@@ -252,7 +258,7 @@ private var isStickerClicked = false
         view?.showSnackBar("stickers clicked >> ", 0)
     }
 
-    private fun hideStickers(){
+    fun hideStickers() {
         isStickerClicked = false
         sticker_camera2_imageView.setImageResource(R.drawable.ic_sticker_small)
         val transaction = childFragmentManager.beginTransaction()
@@ -267,6 +273,14 @@ private var isStickerClicked = false
         view?.showSnackBar("stickers clicked  again >> ", 0)
     }
 
+    //This function take stickerId from MainActivity.
+    fun addSticker(stickerId: String?) {
+        if (stickerId != null) {
+            stillShot_imageView.addNewSticker(stickerId)
+        } else {
+            view?.showSnackBar("Not get any sticker ", 0)
+        }
+    }
 
     override fun onTouch(p0: View?, motionEvent: MotionEvent): Boolean {
         if (mIsImageAvailable && mIsDrawingEnable) {
@@ -503,7 +517,7 @@ private var isStickerClicked = false
     override fun onAttach(context: Context?) {
         super.onAttach(context)
         mCameraIdCallback = activity as CameraIdCallback
-        stickerViewListener = activity as StickerView
+        stickerViewListener = activity as StickerViewListener
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -1173,7 +1187,8 @@ private var isStickerClicked = false
             mIsImageAvailable = false
             mCapturedBitmap = null
             mIsDrawingEnable = false
-            hideStickers()
+            //Check sticker fragment open or not .
+            if (isStickerClicked) hideStickers()
             stillShot_imageView.reset()
             stillShot_imageView.setDrawingEnable(mIsDrawingEnable)
             stillShot_imageView.setImageBitmap(null)
@@ -1212,7 +1227,7 @@ private var isStickerClicked = false
             mIsDrawingEnable = true
 
         }
-        if (isStickerClicked){
+        if (isStickerClicked) {
             hideStickers()
         }
         stillShot_imageView.setDrawingEnable(mIsDrawingEnable)

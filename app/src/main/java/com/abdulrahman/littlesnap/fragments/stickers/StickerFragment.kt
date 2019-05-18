@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import com.abdulrahman.littlesnap.R
+import com.abdulrahman.littlesnap.callbacks.StickerViewListener
 import com.abdulrahman.littlesnap.fragments.BaseFragment
 import com.abdulrahman.littlesnap.model.Stickers
 import com.bumptech.glide.Glide
@@ -36,6 +37,7 @@ class StickerFragment : BaseFragment(), View.OnClickListener, StickerAdapter.Sti
     private lateinit var adapter: StickerAdapter
     private lateinit var database: DatabaseReference
     private lateinit var storage: StorageReference
+    private lateinit var stickerListener:StickerViewListener
 
     companion object {
         fun newInstance(): Fragment {
@@ -47,6 +49,7 @@ class StickerFragment : BaseFragment(), View.OnClickListener, StickerAdapter.Sti
         super.onAttach(context)
         database = FirebaseDatabase.getInstance().getReference("stickers")
         storage = FirebaseStorage.getInstance().getReference("stickers")
+        stickerListener = activity as StickerViewListener
     }
 
     override fun getLayoutResId(): Int {
@@ -65,8 +68,7 @@ class StickerFragment : BaseFragment(), View.OnClickListener, StickerAdapter.Sti
 
     override fun onStickerClicked(position: Int) {
         Log.i(TAG, "Clicked this stickers ${stickers[position].stickerId} ")
-        //todo remove current fragment
-        childFragmentManager.popBackStackImmediate()
+        stickerListener.sendStickerId(stickers[position].stickerId)
     }
 
     private fun getStickers() {

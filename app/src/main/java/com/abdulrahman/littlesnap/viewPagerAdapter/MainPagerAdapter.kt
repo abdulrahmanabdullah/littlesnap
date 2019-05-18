@@ -2,15 +2,17 @@ package com.abdulrahman.littlesnap.viewPagerAdapter
 
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
+import android.support.v4.app.FragmentPagerAdapter
 import android.support.v4.app.FragmentStatePagerAdapter
 import android.support.v4.view.PagerAdapter
+import android.util.Log
 import android.view.ViewGroup
 import com.abdulrahman.littlesnap.fragments.Camera2Fragment
 import com.abdulrahman.littlesnap.fragments.ChatFragment
 import com.abdulrahman.littlesnap.fragments.StoryFragment
 import java.lang.NullPointerException
 
-class MainPagerAdapter constructor(fm:FragmentManager): FragmentStatePagerAdapter(fm) {
+class MainPagerAdapter constructor(fm:FragmentManager): FragmentPagerAdapter(fm) {
 
 
     //Create Map to add and track fragments
@@ -68,9 +70,20 @@ class MainPagerAdapter constructor(fm:FragmentManager): FragmentStatePagerAdapte
         pagerReference.remove(position)
     }
 
+    override fun instantiateItem(container: ViewGroup, position: Int): Any {
+        var createFragment = super.instantiateItem(container, position) as Fragment
+        when(position){
+           1 ->{
+               val camTag = createFragment.tag
+               Log.i("xyz","this tag name for this fragment $camTag")
+           }
+        }
+        return createFragment
+    }
+
     companion object{
-        fun makeFragmentTag(viewId:Int):String{
-            return "android:switcher$viewId:"
+        fun makeFragmentTag(viewId:Int,fragmentId:Int):String{
+            return "android:switcher:$viewId:$fragmentId"
         }
     }
 }

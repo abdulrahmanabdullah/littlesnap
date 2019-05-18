@@ -2,12 +2,24 @@ package com.abdulrahman.littlesnap
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.view.TextureView
 import android.view.View
+import com.abdulrahman.littlesnap.model.Stickers
+import com.google.firebase.database.*
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import java.lang.IllegalArgumentException
 
-class AutoFitTextureView @JvmOverloads constructor(context: Context, attributeSet: AttributeSet? = null, defStyle: Int = 0) :
+private const val TAG = "AutoFitTextureView"
+
+class AutoFitTextureView @JvmOverloads constructor(
+    context: Context,
+    attributeSet: AttributeSet? = null,
+    defStyle: Int = 0
+) :
     TextureView(context, attributeSet, defStyle) {
+
 
     private var ratioWidth = 0
     private var ratioHeight = 0
@@ -23,7 +35,7 @@ class AutoFitTextureView @JvmOverloads constructor(context: Context, attributeSe
      * @param height Relative vertical size
      */
 
-    fun setAspectRation(width: Int, height: Int,screenWidth:Int,screenHeight:Int) {
+    fun setAspectRation(width: Int, height: Int, screenWidth: Int, screenHeight: Int) {
         if (width < 0 || height < 0) {
             throw IllegalArgumentException("Size cannot be negative")
         }
