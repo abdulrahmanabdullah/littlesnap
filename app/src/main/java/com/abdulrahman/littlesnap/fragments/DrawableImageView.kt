@@ -10,15 +10,9 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import android.widget.ImageView
-import com.abdulrahman.littlesnap.R
 import com.abdulrahman.littlesnap.model.Stickers
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.Request
 import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.target.SimpleTarget
-import com.bumptech.glide.request.target.SizeReadyCallback
-import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -40,6 +34,7 @@ class DrawableImageView : AppCompatImageView {
     private var mHostActivity: Activity? = null
 
     private var mIsDrawingEnable = false
+
 
 
     constructor(context: Context) : super(context) {
@@ -85,20 +80,9 @@ class DrawableImageView : AppCompatImageView {
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
 
-//        if (localStickerList.size > 0 ){
-//            for (s in localStickerList){
-//                canvas?.drawBitmap(s.bitmap,s.x.toFloat(),s.y.toFloat(),s.paint)
-//            }
-//        }
-        if (stickers.size > 0) {
-            for (s in stickers) {
-                Glide.with(context)
-                    .asBitmap()
-                    .load(s.stickerUri)
-                    .override(45,45)
-                    .fitCenter()
-                    .error(R.drawable.sad_emoji)
-                    .into(this)
+        if (localStickerList.size > 0) {
+            for (s in localStickerList) {
+                canvas?.drawBitmap(s.bitmap, s.top.toFloat(), s.bottom.toFloat(), s.paint)
             }
         }
         for (pen in mPenList) {
@@ -178,16 +162,8 @@ class DrawableImageView : AppCompatImageView {
 
     fun addNewSticker(stickerId: String?) {
         if (stickerId != null) {
+            //Get stickers from Firebase database .
             querySticker(stickerId)
-            //todo solve this issues :->
-            /**
-             I need drawable image from glide or anywhere
-             also need Bitmap.
-             The problem now how get drawable from bitmap .
-             */
-            val bit = bitmapToDrawable(resources.getDrawable(R.drawable.sad_emoji))
-            val ss = LocalSticker(bit,resources.getDrawable(R.drawable.sad_emoji),0,200)
-            localStickerList.add(ss)
         } else {
             Log.i(TAG, "not receive any stickers ")
         }
@@ -210,54 +186,61 @@ class DrawableImageView : AppCompatImageView {
                     Log.i(TAG, "Stickers size = ${stickers.size}")
                 }
             }
-
         })
         if (stickers.size > 0) {
-//            val bitmap = Glide.with(context)
-//                .asBitmap().load(stickers[0].stickerUri)
-//                .into(object : CustomTarget<Bitmap>() {
-//                    override fun onLoadCleared(placeholder: Drawable?) {
-//                        Log.i(TAG, "onLoadCleared .. ")
-//                    }
-//
-//                    override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-//                        Log.i(TAG, "onResourceReady  ${resource.height} , ${resource.width}")
-//                    }
-//                })
-//            Glide
-//                .with(context)
-//                .load(stickers[0].stickerUri)
-//                .override(300,300)
-//                .into(this)
-//
-//            invalidate()
-//            Log.i(TAG, "get this image ${bitmap}")
+            var drawable: Drawable? = null
+            //Use Glide to download sticker and converted to bitmap and drawable .
+            Glide.with(context)
+                .asBitmap()
+                .load(stickers[0].stickerUri)
+                .into(object : CustomTarget<Bitmap>() {
+                    override fun onLoadCleared(placeholder: Drawable?) {
+                        drawable = placeholder!!
+                        Log.i(TAG, "onLoadCleared .. we got this $drawable ")
+                    }
+
+                    override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+//                        Log.i(
+//                            TAG, "onResourceReady  ${bitmap.height}" +
+//                                    " , ${bitmap.width}"
+//                        )
+                        //To Convert bit map to drawable .
+                        val drawable = BitmapDrawable(resources, resource)
+                        //Return bitmap
+                        val bitmap = bitmapToDrawable(drawable)
+                        val localSticker = LocalSticker(bitmap, drawable, 0, 200)
+                        localStickerList.add(localSticker)
+                    }
+                })
+            invalidate()
         }
     }
 
     private var localStickerList = mutableListOf<LocalSticker>()
 
-    private class LocalSticker(val bitmap: Bitmap,val drawable: Drawable,val x:Int,val y:Int){
-        var paint:Paint
-        var rec:Rect
+    private class LocalSticker(val bitmap: Bitmap, val drawable: Drawable, val top: Int, val bottom: Int) {
+        var paint: Paint
+        //To move drawable image on screen -> top , bottom , right , left .
+        var rec: Rect
+
         init {
             paint = Paint()
-            rec = Rect(x,y,x+200,y+300)
+            rec = Rect(top, bottom, top + 200, bottom + 300)
         }
     }
 
-    fun bitmapToDrawable(drawable: Drawable):Bitmap{
-        var bitmap:Bitmap? = null
-        if(drawable is BitmapDrawable){
+    fun bitmapToDrawable(drawable: Drawable): Bitmap {
+        var bitmap: Bitmap? = null
+        if (drawable is BitmapDrawable) {
             val bitmapDrawable = drawable as BitmapDrawable
-            if(bitmapDrawable.bitmap != null){
-                return Bitmap.createScaledBitmap(bitmapDrawable.bitmap,200,200,false)
+            if (bitmapDrawable.bitmap != null) {
+                return Bitmap.createScaledBitmap(bitmapDrawable.bitmap, 200, 200, false)
             }
-        }else{
-            bitmap = Bitmap.createBitmap(200,200,Bitmap.Config.ARGB_8888)
+        } else {
+            bitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888)
         }
         val canvas = Canvas(bitmap)
-        drawable.setBounds(0,0,bitmap!!.width,bitmap.height)
+        drawable.setBounds(0, 0, bitmap!!.width, bitmap.height)
         drawable.draw(canvas)
         return bitmap
     }
