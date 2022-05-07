@@ -30,17 +30,12 @@ import com.abdulrahman.littlesnap.callbacks.CameraIdCallback
 import com.abdulrahman.littlesnap.callbacks.SaveImageCallback
 import com.abdulrahman.littlesnap.callbacks.StickerViewListener
 import com.abdulrahman.littlesnap.fragments.stickers.StickerFragment
-import com.abdulrahman.littlesnap.model.Stickers
 import com.abdulrahman.littlesnap.utlities.PIC_FILE_NAME
 import com.abdulrahman.littlesnap.utlities.showSnackBar
 import com.abdulrahman.littlesnap.utlities.showToast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.fragment_camera2.*
 import java.io.*
 import java.lang.Exception

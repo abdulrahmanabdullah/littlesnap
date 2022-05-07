@@ -2,13 +2,8 @@ package com.abdulrahman.littlesnap
 
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import android.view.TextureView
 import android.view.View
-import com.abdulrahman.littlesnap.model.Stickers
-import com.google.firebase.database.*
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 import java.lang.IllegalArgumentException
 
 private const val TAG = "AutoFitTextureView"

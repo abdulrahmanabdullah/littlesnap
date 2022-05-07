@@ -18,7 +18,6 @@ data class Users(val userImage: Int,
 //upload all images and return position of image
 fun getAvatars(position: Int): Int {
 
-    var p = position
     val avatars = listOf(
         R.drawable.img_amusing,
         R.drawable.img_boild_man,
@@ -28,8 +27,6 @@ fun getAvatars(position: Int): Int {
         R.drawable.img_red_hair_main,
         R.drawable.ic_yellow_hair_women
     )
-//    if (position >= avatars.size - 1)
-//        p = 0
     return avatars[position%5]
 }
 

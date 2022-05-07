@@ -10,7 +10,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import com.abdulrahman.littlesnap.model.Stickers
+import com.abdulrahman.littlesnap.model.stickers.Stickers
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
@@ -80,7 +80,7 @@ class DrawableImageView : AppCompatImageView {
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
 
-        if (localStickerList.size > 0) {
+        if (localStickerList.size >= 0) {
             for (s in localStickerList) {
                 canvas?.drawBitmap(s.bitmap, s.top.toFloat(), s.bottom.toFloat(), s.paint)
             }

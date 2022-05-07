@@ -1,7 +1,6 @@
 package com.abdulrahman.littlesnap.fragments.stickers
 
 import android.content.Context
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -15,16 +14,16 @@ import android.widget.ImageView
 import com.abdulrahman.littlesnap.R
 import com.abdulrahman.littlesnap.callbacks.StickerViewListener
 import com.abdulrahman.littlesnap.fragments.BaseFragment
-import com.abdulrahman.littlesnap.model.Stickers
+import com.abdulrahman.littlesnap.model.stickers.Stickers
+import com.abdulrahman.littlesnap.model.stickers.remote.StickersRemote
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
+import com.bumptech.glide.GlideBuilder
 import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
-import kotlinx.android.synthetic.main.layout_stickers_list_item.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.lang.Exception
 
 const val TAG = "Stickerfragments"
@@ -37,7 +36,7 @@ class StickerFragment : BaseFragment(), View.OnClickListener, StickerAdapter.Sti
     private lateinit var adapter: StickerAdapter
     private lateinit var database: DatabaseReference
     private lateinit var storage: StorageReference
-    private lateinit var stickerListener:StickerViewListener
+    private lateinit var stickerListener: StickerViewListener
 
     companion object {
         fun newInstance(): Fragment {
@@ -64,6 +63,14 @@ class StickerFragment : BaseFragment(), View.OnClickListener, StickerAdapter.Sti
         adapter = StickerAdapter(activity!!, stickers, this)
         recyclerView.adapter = adapter
         getStickers()
+        val t = StickersRemote()
+        GlobalScope.launch(Dispatchers.IO) {
+            //            Log.i("xyz","Now i got this stickers  ${temp.size}")
+            val temp = t.fetchStickers().await()
+            Log.i("xyz", "Morning try >> ${temp.size}")
+        }
+
+
     }
 
     override fun onStickerClicked(position: Int) {
@@ -174,12 +181,11 @@ class StickerHolder(itemView: View, val listener: StickerAdapter.StickerListener
         with(itemView) {
             Glide.with(context)
                 .load(sticker.stickerUri)
-                .placeholder(R.drawable.ic_chat)
                 .fitCenter()
                 .error(R.drawable.x_white_icon)
                 .into(stickerImageView)
 
-            this.setOnClickListener{
+            this.setOnClickListener {
                 listener.onStickerClicked(adapterPosition)
             }
 

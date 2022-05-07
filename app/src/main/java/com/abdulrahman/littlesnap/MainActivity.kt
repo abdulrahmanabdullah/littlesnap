@@ -16,6 +16,8 @@ import com.abdulrahman.littlesnap.callbacks.CameraIdCallback
 import com.abdulrahman.littlesnap.callbacks.StickerViewListener
 import com.abdulrahman.littlesnap.fragments.Camera2Fragment
 import com.abdulrahman.littlesnap.fragments.stickers.StickerFragment
+import com.abdulrahman.littlesnap.model.stickers.StickerRepository
+import com.abdulrahman.littlesnap.model.stickers.remote.StickersRemote
 import com.abdulrahman.littlesnap.utlities.PERMISSIONS
 import com.abdulrahman.littlesnap.utlities.REQUEST_CAMERA_PERMISSIONS
 import com.abdulrahman.littlesnap.utlities.showToast
@@ -23,6 +25,9 @@ import com.abdulrahman.littlesnap.viewPagerAdapter.MainPagerAdapter
 import com.abdulrahman.littlesnap.viewPagerAdapter.MainViewPager
 import com.abdulrahman.littlesnap.viewPagerAdapter.SnapTabView
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 private const val TAG = "MainActivity"
 

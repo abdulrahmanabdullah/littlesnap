@@ -1,4 +1,4 @@
-package com.abdulrahman.littlesnap.model
+package com.abdulrahman.littlesnap.model.stickers
 
 import java.util.*
 

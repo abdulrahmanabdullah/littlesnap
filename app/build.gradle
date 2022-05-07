@@ -34,6 +34,13 @@ dependencies {
     //Gilde
     implementation 'com.github.bumptech.glide:glide:4.9.0'
 
+    //Kodein
+//    implementation 'org.kodein.di:kodein-di-generic-jvm:6.2.1'
+//    implementation 'org.kodein.di:kodein-di-framework-android-x:6.2.1'
+    // Kotlin Android Coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.1.1"
+
     implementation 'com.google.firebase:firebase-core:16.0.9'
     implementation 'com.google.firebase:firebase-storage:17.0.0'
     implementation 'com.google.firebase:firebase-database:17.0.0'
